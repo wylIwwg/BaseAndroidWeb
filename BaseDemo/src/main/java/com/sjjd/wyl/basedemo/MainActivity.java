@@ -14,35 +14,24 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.sjjd.wyl.baseandroid.adapter.CommonAdapter;
-import com.sjjd.wyl.baseandroid.adapter.ViewHolder;
-import com.sjjd.wyl.baseandroid.base.BaseActivity2;
-import com.sjjd.wyl.baseandroid.bean.Banner;
-import com.sjjd.wyl.baseandroid.socket.SocketManager;
-import com.sjjd.wyl.baseandroid.tools.IConfigs;
-import com.sjjd.wyl.baseandroid.tools.ToolDevice;
-import com.sjjd.wyl.baseandroid.tools.ToolDisplay;
-import com.sjjd.wyl.baseandroid.tools.ToolLog;
-import com.sjjd.wyl.baseandroid.tools.ToolWifi;
-import com.sjjd.wyl.baseandroid.view.ImageBanner;
-import com.sjjd.wyl.baseandroid.view.ItemScrollLayoutManager;
-import com.sjjd.wyl.baseandroid.view.SuperBanner;
-import com.sjjd.wyl.baseandroid.view.VerticalScrollTextView;
-import com.xuhao.didi.core.iocore.interfaces.IPulseSendable;
-import com.xuhao.didi.core.iocore.interfaces.ISendable;
-import com.xuhao.didi.core.pojo.OriginalData;
-import com.xuhao.didi.socket.client.sdk.OkSocket;
-import com.xuhao.didi.socket.client.sdk.client.ConnectionInfo;
-import com.xuhao.didi.socket.client.sdk.client.OkSocketOptions;
-import com.xuhao.didi.socket.client.sdk.client.action.SocketActionAdapter;
-import com.xuhao.didi.socket.client.sdk.client.connection.IConnectionManager;
+import com.sjjd.wyl.baseandroidweb.adapter.CommonAdapter;
+import com.sjjd.wyl.baseandroidweb.adapter.ViewHolder;
+import com.sjjd.wyl.baseandroidweb.base.BaseActivity2;
+import com.sjjd.wyl.baseandroidweb.bean.Banner;
+import com.sjjd.wyl.baseandroidweb.socket.SocketManager;
+import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
+import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
+import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
+import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
+import com.sjjd.wyl.baseandroidweb.tools.ToolWifi;
+import com.sjjd.wyl.baseandroidweb.view.ImageBanner;
+import com.sjjd.wyl.baseandroidweb.view.ItemScrollLayoutManager;
+import com.sjjd.wyl.baseandroidweb.view.SuperBanner;
+import com.sjjd.wyl.baseandroidweb.view.VerticalScrollTextView;
 import com.yanzhenjie.permission.runtime.Permission;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -411,93 +400,6 @@ public class MainActivity extends BaseActivity2 {
         }
     }
 
-    private void initSocket() {
-        //连接参数设置(IP,端口号),这也是一个连接的唯一标识,不同连接,该参数中的两个值至少有其一不一样
-        ConnectionInfo info = new ConnectionInfo("192.168.2.188", 8282);
-        //调用OkSocket,开启这次连接的通道,拿到通道Manager
-        IConnectionManager manager = OkSocket.open(info);
-
-        //获得当前连接通道的参配对象
-        OkSocketOptions options = manager.getOption();
-        //基于当前参配对象构建一个参配建造者类
-        OkSocketOptions.Builder builder = new OkSocketOptions.Builder(options);
-        //建造一个新的参配对象并且付给通道
-        manager.option(builder.build());
-        manager.registerReceiver(new SocketActionAdapter() {
-            @Override
-            public void onSocketIOThreadStart(String action) {
-                super.onSocketIOThreadStart(action);
-                ToolLog.e(TAG, "onSocketIOThreadStart: ");
-            }
-
-            @Override
-            public void onSocketIOThreadShutdown(String action, Exception e) {
-                super.onSocketIOThreadShutdown(action, e);
-                ToolLog.e(TAG, "onSocketIOThreadShutdown: " + "  " + action);
-            }
-
-            @Override
-            public void onSocketDisconnection(ConnectionInfo info, String action, Exception e) {
-                super.onSocketDisconnection(info, action, e);
-                ToolLog.e(TAG, "onSocketDisconnection: " + info.toString() + "  " + action);
-            }
-
-            @Override
-            public void onSocketConnectionSuccess(ConnectionInfo info, String action) {
-                super.onSocketConnectionSuccess(info, action);
-                ToolLog.e(TAG, "onSocketConnectionSuccess: " + info.toString() + "  " + action);
-
-                OkSocket.open(info)
-                        .getPulseManager()
-                        .setPulseSendable(mPulseData)
-                        .pulse();//Start the heartbeat.
-            }
-
-            @Override
-            public void onSocketConnectionFailed(ConnectionInfo info, String action, Exception e) {
-                super.onSocketConnectionFailed(info, action, e);
-                ToolLog.e(TAG, "onSocketConnectionFailed: " + info.toString() + "  " + action);
-            }
-
-            @Override
-            public void onSocketReadResponse(ConnectionInfo info, String action, OriginalData data) {
-                super.onSocketReadResponse(info, action, data);
-                ToolLog.e(TAG, "onSocketReadResponse: ");
-            }
-
-            @Override
-            public void onSocketWriteResponse(ConnectionInfo info, String action, ISendable data) {
-                super.onSocketWriteResponse(info, action, data);
-                ToolLog.e(TAG, "onSocketWriteResponse: ");
-            }
-
-            @Override
-            public void onPulseSend(ConnectionInfo info, IPulseSendable data) {
-                super.onPulseSend(info, data);
-                ToolLog.e(TAG, "onPulseSend: " + data.toString());
-            }
-        });
-        //调用通道进行连接
-        manager.connect();
-    }
-
-    private IConnectionManager mManager;
-    private PulseData mPulseData = new PulseData();
-
-    public class PulseData implements IPulseSendable {
-        private String str = "{\"type\":\"ping\"}";
-
-        @Override
-        public byte[] parse() {
-            //Build the byte array according to the server's parsing rules
-            byte[] body = str.getBytes(Charset.defaultCharset());
-            ByteBuffer bb = ByteBuffer.allocate(4 + body.length);
-            bb.order(ByteOrder.BIG_ENDIAN);
-            bb.putInt(body.length);
-            bb.put(body);
-            return bb.array();
-        }
-    }
 
     private String INFO() {
         //BOARD 主板

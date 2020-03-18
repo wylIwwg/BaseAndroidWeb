@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.sjjd.wyl.baseandroid.view.VerticalScrollTextView
+            <com.sjjd.wyl.baseandroidweb.view.VerticalScrollTextView
                 android:id="@+id/tvVs"
                 android:layout_width="250px"
                 android:layout_height="200px" />
@@ -30,19 +30,19 @@
                 android:onClick="showInfo"
                 android:text="查看信息" />
 
-            <com.sjjd.wyl.baseandroid.view.ImageBanner
+            <com.sjjd.wyl.baseandroidweb.view.ImageBanner
                 android:id="@+id/banner"
                 android:layout_width="match_parent"
                 android:layout_height="200dp">
 
-            </com.sjjd.wyl.baseandroid.view.ImageBanner>
+            </com.sjjd.wyl.baseandroidweb.view.ImageBanner>
 
-            <com.sjjd.wyl.baseandroid.view.SuperBanner
+            <com.sjjd.wyl.baseandroidweb.view.SuperBanner
                 android:id="@+id/rlv"
                 android:layout_width="200px"
                 android:layout_height="wrap_content">
 
-            </com.sjjd.wyl.baseandroid.view.SuperBanner>
+            </com.sjjd.wyl.baseandroidweb.view.SuperBanner>
 
 
             <TextView

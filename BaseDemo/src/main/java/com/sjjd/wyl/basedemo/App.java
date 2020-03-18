@@ -2,7 +2,7 @@ package com.sjjd.wyl.basedemo;
 
 import android.os.Environment;
 
-import com.sjjd.wyl.baseandroid.base.BaseApp;
+import com.sjjd.wyl.baseandroidweb.base.BaseApp;
 
 /**
  * Created by wyl on 2019/2/25.
