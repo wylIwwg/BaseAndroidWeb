@@ -3,7 +3,6 @@ package com.sjjd.wyl.baseandroidweb.tools;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Base64;
-import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.sjjd.wyl.baseandroidweb.bean.Register;
@@ -170,56 +169,112 @@ public class ToolRegister {
         return null;
     }
 
+    public RegisterResult checkDeviceRegisteredPhp() {
+        RegisterResult mResult = new RegisterResult();
 
+        try {
+            this.mRegister = this.getRegisterText();
+            if (this.mRegister != null) {
+                String mac = ToolDevice.getMachineHardwareAddress();
+                if (mac == null || mac.equals("02:00:00:00:00:00")) {
+                    Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
+                    ToolSP.init(mContext);
+                    mResult.setRegisterCode(1);
+                    mResult.setRegistered(false);
+                    mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+                    return mResult;
+                }
+
+                if (this.mRegister.getIdentity().equals(mac)) {
+                    String mLimit = this.mRegister.getLimit();
+                    this.mRegister.getDate();
+                    if (mLimit != null && mLimit.length() > 0) {
+                        int mInt = Integer.parseInt(mLimit);
+                        if (mInt <= -1) {
+                            //永久
+                            mResult.setRegistered(true);
+                            mResult.setRegisterCode(2);
+                        } else if (mInt > 0) {
+                            mResult.setRegistered(true);
+                            mResult.setRegisterCode(2);
+                            long rt = Long.parseLong(this.mRegister.getDate());
+                            long mMillis = System.currentTimeMillis();
+                            Date newDate2 = new Date(rt + (long) mInt * 24L * 60L * 60L * 1000L);
+                            if (newDate2.getTime() < mMillis) {
+                                mResult.setRegisterCode(3);
+                                mResult.setRegistered(false);
+                                ToolRegister mInstance = getInstance(mContext);
+                                mResult.setRegisterStr(mInstance.register2Base64(false, ToolSP.getDIYString("app_type")));
+                            }
+                        }
+
+                        return mResult;
+                    }
+                }
+            } else {
+                mResult.setRegisterCode(1);
+                mResult.setRegistered(false);
+                mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+            }
+        } catch (Exception var10) {
+            var10.printStackTrace();
+        }
+
+        return mResult;
+    }
     /**
      * 检测设备是否注册
      * 设备注册信息
      *
      * @return
      */
-    public RegisterResult checkDeviceRegistered() {
+    public RegisterResult checkDeviceRegisteredJava() {
         RegisterResult mResult = new RegisterResult();
         try {
-            mRegister = getRegisterText();//将数据转成对象
-            if (mRegister != null) {
-                //判断密钥里面的mac值和设备mac是否一致
+            this.mRegister = this.getRegisterText();
+            if (this.mRegister != null) {
                 String mac = ToolDevice.getMachineHardwareAddress();
                 if (mac == null || mac.equals("02:00:00:00:00:00")) {
-                    Toasty.error(mContext, "MAC获取不正确：" + mac, Toast.LENGTH_LONG, true).show();
-                    // mResult.setRegistered(false);
-                    // mResult.setRegisterCode(IConfigs.REGISTER_FORBIDDEN);
-                    mResult.setRegisterStr(register2Base64(false, ToolSP.init(mContext).getDIYString(IConfigs.SP_APP_TYPE)));
+                    Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
+                    ToolSP.init(mContext);
+                    mResult.setRegisterCode(0);
+                    mResult.setRegistered(false);
+                    mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
                     return mResult;
                 }
-                if (mRegister.getIdentity().equals(mac)) {
-                    String mLimit = mRegister.getLimit();
-                    mRegister.getDate();
+
+                if (this.mRegister.getIdentity().equals(mac)) {
+                    String mLimit = this.mRegister.getLimit();
+                    this.mRegister.getDate();
                     if (mLimit != null && mLimit.length() > 0) {
                         int mInt = Integer.parseInt(mLimit);
                         if (mInt <= -1) {
+                            //永久
                             mResult.setRegistered(true);
-                            mResult.setRegisterCode(IConfigs.DEVICE_REGISTERED);
+                            mResult.setRegisterCode(1);
                         } else if (mInt > 0) {
                             mResult.setRegistered(true);
-                            mResult.setRegisterCode(IConfigs.DEVICE_REGISTERED);
-                            long rt = Long.parseLong(mRegister.getDate());//获取注册时间
-                            long mMillis = System.currentTimeMillis();//本地时间
-                            Date newDate2 = new Date(rt + (long) mInt * 24 * 60 * 60 * 1000);
-                            //到期了 再次申请注册
+                            mResult.setRegisterCode(1);
+                            long rt = Long.parseLong(this.mRegister.getDate());
+                            long mMillis = System.currentTimeMillis();
+                            Date newDate2 = new Date(rt + (long) mInt * 24L * 60L * 60L * 1000L);
                             if (newDate2.getTime() < mMillis) {
-                                mResult.setRegisterCode(IConfigs.DEVICE_OUTTIME);
+                                mResult.setRegisterCode(2);
                                 mResult.setRegistered(false);
-                                mResult.setRegisterStr(ToolRegister.getInstance(mContext).register2Base64(false, ToolSP.init(mContext).getDIYString(IConfigs.SP_APP_TYPE)));
+                                mResult.setRegisterStr(register2Base64(false, ToolSP.getDIYString("app_type")));
                             }
                         }
+
                         return mResult;
                     }
                 }
-
+            } else {
+                mResult.setRegisterCode(1);
+                mResult.setRegistered(false);
+                mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception var10) {
+            var10.printStackTrace();
         }
         return mResult;
 

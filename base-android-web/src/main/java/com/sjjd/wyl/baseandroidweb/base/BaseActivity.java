@@ -14,8 +14,6 @@ import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.bean.RegisterResult;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
-import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
-import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 
@@ -134,12 +132,6 @@ public class BaseActivity extends AppCompatActivity implements BaseDataHandler.M
 
     RegisterResult mRegisterResult;
 
-    public void isDeviceRegistered() {
-
-        mRegisterResult = ToolRegister.getInstance(mContext).checkDeviceRegistered();
-        ToolLog.e(TAG, "onCreate: " + mRegisterResult.toString());
-
-    }
 
     HttpParams mParams;
 

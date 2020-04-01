@@ -42,8 +42,6 @@ public class TCPSocket {
     private boolean alive = false;
 
 
-
-
     private MsgThread mMsgThread;
 
     public TCPSocket(Context context) {
@@ -139,17 +137,55 @@ public class TCPSocket {
         lastReceiveTime = System.currentTimeMillis();
 
         if (line.contains(LABEL)) {
+
             int mIndex = line.indexOf(LABEL);//获取标识符索引
-            ToolLog.e(TAG, "【mIndex】 : " + mIndex);
-            // result += line.replace(LABEL, "");
+
+            ToolLog.e(TAG, "找到标识符 : " + line + "\n");
+
             result += line.substring(0, mIndex);//获取标识符前段字符
-            // remainder = line.substring(mIndex, line.length() - 1);//获取标识符后段字符
+
+            if (result.startsWith("{") && result.endsWith("}")) {
+                if (mMessageListener != null) {
+
+                    while (result.contains("}{")) {
+                        int index = result.indexOf("}{");
+                        String res = result.substring(0, index + 1);
+                        mMessageListener.onMessageReceived(res);
+                        result = result.substring(index + 1);
+
+                    }
+
+                    mMessageListener.onMessageReceived(result);
+                    result = "";
+                    String more = line.substring(mIndex + 1);
+                    if (more.length() > 0) {
+                        ToolLog.e(TAG, "【more】 : " + more + "\n");
+                        handleReceiveTcpMessage(more);
+                    }
+                }
+            }
+        } else {
+            result += line;
+            ToolLog.e(TAG, "handleReceiveTcpMessage: " + result);
+        }
+
+
+      /*  if (line.contains(LABEL)) {
+
+            int mIndex = line.indexOf(LABEL);//获取标识符索引
+
+            result += line.substring(0, mIndex);//获取标识符前段字符
+
             ToolLog.e(TAG, "【找到结束符】 : " + result);
+
             if (result.startsWith("{") && result.endsWith("}")) {
                 if (mMessageListener != null) {
                     mMessageListener.onMessageReceived(result);
                     result="";
                     String more =line.substring(mIndex+1);
+
+
+
                     if(more.length()>0){
                         ToolLog.e(TAG, "【more】 : " + more);
                         handleReceiveTcpMessage(more);
@@ -161,7 +197,7 @@ public class TCPSocket {
         } else {
             result += line;
             ToolLog.e(TAG, "【等待结束符】: " + result);
-        }
+        }*/
 
 
     }

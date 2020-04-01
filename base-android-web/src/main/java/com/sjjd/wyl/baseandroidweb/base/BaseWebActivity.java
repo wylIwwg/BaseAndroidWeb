@@ -10,17 +10,10 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.sjjd.wyl.baseandroidweb.R;
-import com.sjjd.wyl.baseandroidweb.bean.Register;
-import com.sjjd.wyl.baseandroidweb.bean.RegisterResult;
-import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
-import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
-import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
-import com.sjjd.wyl.baseandroidweb.tools.ToolToast;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 
-import java.util.Date;
 import java.util.List;
 
 import es.dmoral.toasty.Toasty;
@@ -53,44 +46,7 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
 
     }
 
-    public void isDeviceRegistered() {
-        RegisterResult mRegisterResult = ToolRegister.getInstance(mContext).checkDeviceRegistered();
 
-        ToolLog.e(TAG, "onCreate: " + mRegisterResult);
-        switch (mRegisterResult.getRegisterCode()) {
-            case IConfigs.REGISTER_FORBIDDEN://禁止注册/未注册
-                //请求注册
-                //请求信息密文
-                mRegisterViper = ToolRegister.getInstance(mContext).register2Base64(false, mMark);
-                mRegisterCode = IConfigs.DEVICE_FORBIDDEN;
-                break;
-            case IConfigs.REGISTER_FOREVER://永久注册
-                mRegisterCode = IConfigs.DEVICE_REGISTERED;
-                isRegistered = true;
-                break;
-            default://注册时间
-                Register mRegister = ToolRegister.getInstance(mContext).getRegister();
-                if (mRegister != null) {
-                    isRegistered = true;
-                    mRegisterCode = IConfigs.DEVICE_REGISTERED;
-                    long rt = Long.parseLong(mRegister.getDate());//获取注册时间
-                    long mMillis = System.currentTimeMillis();//本地时间
-
-                    Date newDate2 = new Date(rt + (long) mRegisterResult.getRegisterCode() * 24 * 60 * 60 * 1000);
-
-                    //到期了 再次申请注册
-                    if (newDate2.getTime() < mMillis) {
-                        ToolToast.showToast(mContext, "设备注册已过期！", 2000);
-                        mRegisterCode = IConfigs.DEVICE_OUTTIME;
-                        mRegisterViper = ToolRegister.getInstance(mContext).register2Base64(false, mMark);
-                        isRegistered = false;
-                    }
-
-                }
-
-                break;
-        }
-    }
 
     public void hasPermission() {
         if (PERMISSIONS != null && PERMISSIONS.length > 0) {
