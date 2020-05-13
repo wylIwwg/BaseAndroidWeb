@@ -78,7 +78,7 @@ public class ToolRegister {
      */
     public String register2Base64(boolean just64, String mark) {
 
-        String mac = ToolDevice.getMachineHardwareAddress();
+        String mac = ToolDevice.getMac();
         BRegister r = new BRegister();
         r.setIdentity(mac);
         r.setMark(mark);
@@ -176,7 +176,7 @@ public class ToolRegister {
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
-                String mac = ToolDevice.getMachineHardwareAddress();
+                String mac = ToolDevice.getMac();
                 if (mac == null || mac.equals("02:00:00:00:00:00")) {
                     Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
                     ToolSP.init(mContext);
@@ -235,7 +235,7 @@ public class ToolRegister {
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
-                String mac = ToolDevice.getMachineHardwareAddress();
+                String mac = ToolDevice.getMac();
                 if (mac == null || mac.equals("02:00:00:00:00:00")) {
                     Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
                     ToolSP.init(mContext);
