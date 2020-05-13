@@ -23,10 +23,6 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.Reader;
 import java.lang.reflect.Method;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -47,24 +43,19 @@ public class ToolDevice {
         if (context == null) {
             return "";
         }
-
         String imei = "";
-
         try {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             if (tm == null || TextUtils.isEmpty(tm.getDeviceId())) {
                 // 双卡双待需要通过phone1和phone2获取imei，默认取phone1的imei。
                 tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             }
-
             if (tm != null) {
                 imei = tm.getDeviceId();
             }
         } catch (SecurityException e) {
             e.printStackTrace();
         }
-
-
         return imei;
     }
 
@@ -214,7 +205,7 @@ public class ToolDevice {
         //优先读取本地文件记录的mac值
         String mac = ToolFile.readString(IConfigs.PATH_MAC);
         if (mac == null || mac.length() < 1) {
-            mac = getMachineHardwareAddress();
+            mac = getMacFromCatOrder();
             if (mac != null)
                 ToolFile.string2File(IConfigs.PATH_MAC, mac);
         }
@@ -230,7 +221,7 @@ public class ToolDevice {
      *
      * @return
      */
-    public static String getMachineHardwareAddress() {
+   /* public static String getMachineHardwareAddress() {
         Enumeration<NetworkInterface> interfaces = null;
         try {
             interfaces = NetworkInterface.getNetworkInterfaces();
@@ -253,7 +244,7 @@ public class ToolDevice {
             }
         }
         return hardWareAddress;
-    }
+    }*/
 
     /***
      * byte转为String
@@ -332,7 +323,7 @@ public class ToolDevice {
      * @param context
      * @return
      */
-    public static String getMacFromWifiManager(Context context) {
+ /*   public static String getMacFromWifiManager(Context context) {
         if (context == null) {
             return "";
         }
@@ -358,14 +349,14 @@ public class ToolDevice {
         }
         return mac;
     }
-
+*/
     /**
      * 获取mac地址
      * 可以突破android6.0的限制
      *
      * @return
      */
-    public static String getMacFromWlan0() {
+  /*  public static String getMacFromWlan0() {
         try {
             String interfaceName = "wlan0";
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
@@ -391,7 +382,7 @@ public class ToolDevice {
         } catch (Exception ex) {
         } // for now eat exceptions
         return "";
-    }
+    }*/
 
     /**
      * 获取IMSI

@@ -3,7 +3,7 @@ package com.sjjd.wyl.baseandroidweb.bean;
 /**
  * Created by wyl on 2020/1/20.
  */
-public class RegisterResult {
+public class BRegisterResult {
     private String registerStr;
     private int registerCode;
     private boolean registered;
@@ -11,7 +11,7 @@ public class RegisterResult {
 
     @Override
     public String toString() {
-        return "RegisterResult{" +
+        return "BRegisterResult{" +
                 "registerStr='" + registerStr + '\'' +
                 ", registerCode=" + registerCode +
                 ", registered=" + registered +

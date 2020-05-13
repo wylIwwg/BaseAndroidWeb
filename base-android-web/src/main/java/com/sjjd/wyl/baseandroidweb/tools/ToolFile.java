@@ -1,10 +1,6 @@
 package com.sjjd.wyl.baseandroidweb.tools;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.usb.UsbDevice;
@@ -18,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,64 +40,6 @@ public class ToolFile {
 
 
     public static final String TAG = "ToolFile";
-
-
-    /**
-     * @param context
-     */
-    public static void launchApp(Context context, String packageName) {
-        // 判断是否安装过App，否则去市场下载
-
-        context.startActivity(context.getPackageManager().getLaunchIntentForPackage(packageName));
-
-    }
-
-
-    /**
-     * @param context
-     */
-    public static void launchapp(Context context, String pakeName) {
-        // 判断是否安装过App，否则去市场下载
-        context.startActivity(context.getPackageManager().getLaunchIntentForPackage(pakeName));
-
-    }
-
-    /**
-     * 检测某个应用是否安装
-     *
-     * @param context
-     * @param packageName
-     * @return
-     */
-    public static boolean isAppInstalled(Context context, String packageName) {
-        //获取手机系统的所有APP包名，然后进行一一比较
-        List<PackageInfo> pinfo = context.getPackageManager().getInstalledPackages(0);
-        for (int i = 0; i < pinfo.size(); i++) {
-            // ToolLog.e(TAG, "isAppInstalled: " + ((PackageInfo) pinfo.get(i)).packageName);
-            if (((PackageInfo) pinfo.get(i)).packageName.equalsIgnoreCase(packageName))
-                return true;
-        }
-        return false;
-    }
-
-    public static void isAppInstalled2(Context context, String appLabel) {
-        PackageManager packageManager = context.getPackageManager();
-        //匹配程序的入口
-        Intent intent = new Intent(Intent.ACTION_MAIN, null);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        //查询
-        List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent, 0);
-        for (int i = 0; i < resolveInfos.size(); i++) {
-
-            String appName = resolveInfos.get(i).loadLabel(packageManager).toString();
-            ToolLog.e(TAG, "isAppInstalled2: " + appName);
-            if (appLabel.equals(appName)) {
-                String packageName = resolveInfos.get(i).activityInfo.packageName;
-                ToolLog.e(TAG, "isAppInstalled2: " + packageName);
-                ToolLog.e(TAG, "isAppInstalled2: " + resolveInfos.get(i).activityInfo.name);
-            }
-        }
-    }
 
 
     public static Bitmap pathToBitmap(String path) {
@@ -165,12 +104,23 @@ public class ToolFile {
     }
 
 
+    /**
+     * 从文件读取
+     *
+     * @param path
+     * @return
+     */
     public static String readString(String path) {
         String str = null;
         InputStreamReader isr = null;
         BufferedReader br = null;
         try {
-            isr = new InputStreamReader(new FileInputStream(new File(path)));
+            File mFile = new File(path);
+            if (!mFile.exists())
+                return "";
+            if (mFile.isDirectory())
+                return "";
+            isr = new InputStreamReader(new FileInputStream(mFile));
             br = new BufferedReader(isr);
             String line;
             StringBuilder builder = new StringBuilder();
@@ -271,13 +221,37 @@ public class ToolFile {
         return dirFile.delete();
     }
 
+    public static void deleteLogFiles(String path, final int days) {
+        if (days < 1) return;
+        File dir = new File(path);
+        if (dir.isDirectory()) {
+            dir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String name) {
+                    long mModified = file.lastModified();//2020-5-9 + 2
+                    long cur = System.currentTimeMillis();// 2020-5-12
+                    if (mModified + 1000 * 60 * 60 * 24 * days < cur) {
+                        ToolLog.e(TAG, "删除日志" + file.getAbsolutePath());
+                        deleteFile(file);
+                    }
+                    return false;
+                }
+            });
+        }
+    }
+
+    public static void deleteLogFiles(int days) {
+        deleteLogFiles(IConfigs.PATH_LOG, days);
+
+    }
+
     /**
      * 根据路径删除指定的目录或文件，无论存在与否
      *
      * @param filePath 要删除的目录或者文件
      * @return
      */
-    public static boolean DeleteFolder(String filePath) {
+    public static boolean deleteFolder(String filePath) {
 
         File file = new File(filePath);
         if (!file.exists()) {

@@ -1,6 +1,7 @@
 package com.sjjd.wyl.baseandroidweb.base;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +12,7 @@ import android.widget.Toast;
 
 import com.lzy.okgo.model.HttpParams;
 import com.sjjd.wyl.baseandroidweb.R;
-import com.sjjd.wyl.baseandroidweb.bean.RegisterResult;
+import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
 import com.yanzhenjie.permission.Action;
@@ -44,6 +45,11 @@ public class BaseActivity extends AppCompatActivity implements BaseDataHandler.M
         mDataHandler = new BaseDataHandler(this);
         mDataHandler.setMessageListener(this);
 
+        if (Build.VERSION.SDK_INT >= 23) {
+            hasPermission();
+        } else {
+            initData();
+        }
 
     }
 
@@ -130,7 +136,7 @@ public class BaseActivity extends AppCompatActivity implements BaseDataHandler.M
         }
     }
 
-    RegisterResult mRegisterResult;
+    BRegisterResult mRegisterResult;
 
 
     HttpParams mParams;

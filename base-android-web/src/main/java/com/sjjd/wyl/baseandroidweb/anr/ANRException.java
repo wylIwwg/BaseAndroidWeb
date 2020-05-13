@@ -1,7 +1,9 @@
 package com.sjjd.wyl.baseandroidweb.anr;
 
+import android.content.Context;
 import android.os.Environment;
 import android.os.Looper;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +44,10 @@ public class ANRException extends RuntimeException {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                //抛出空指针异常  来重启应用
+                Context mContext = null;
+                Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
             }
         }).start();
 

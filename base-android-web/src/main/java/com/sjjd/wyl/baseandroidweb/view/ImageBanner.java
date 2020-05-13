@@ -20,7 +20,7 @@ import android.widget.RadioGroup;
 import android.widget.Scroller;
 
 import com.bumptech.glide.Glide;
-import com.sjjd.wyl.baseandroidweb.bean.Banner;
+import com.sjjd.wyl.baseandroidweb.bean.BBanner;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -94,15 +94,15 @@ public class ImageBanner extends ViewPager {
     }
 
 
-    public void reFresh(List<Banner> Banner) {
-        mAdapter.reFresh(Banner);
+    public void reFresh(List<BBanner> BBanner) {
+        mAdapter.reFresh(BBanner);
     }
 
     class BannerAdapter extends PagerAdapter {
         Context mContext;
-        List<Banner> mList;
+        List<BBanner> mList;
 
-        public BannerAdapter(Context context, List<Banner> list) {
+        public BannerAdapter(Context context, List<BBanner> list) {
             mContext = context;
             mList = list;
         }
@@ -126,7 +126,7 @@ public class ImageBanner extends ViewPager {
             mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
             container.addView(mImageView);
-            final Banner mData = mList.get(position % mList.size());
+            final BBanner mData = mList.get(position % mList.size());
 
             Glide.with(mContext).load(mData.getUrl().length() > 0 ? mData.getUrl() : mData.getResId()).fitCenter().into(mImageView);
 
@@ -149,10 +149,10 @@ public class ImageBanner extends ViewPager {
             container.removeView((View) object);
         }
 
-        public void reFresh(List<Banner> Banner) {
+        public void reFresh(List<BBanner> BBanner) {
             if (mList != null) {
                 mList.clear();
-                mList.addAll(Banner);
+                mList.addAll(BBanner);
                 notifyDataSetChanged();
             }
         }
@@ -172,25 +172,25 @@ public class ImageBanner extends ViewPager {
     /**
      * 开始图片的轮播
      *
-     * @param banner     轮播的图片集合
+     * @param BBanner     轮播的图片集合
      * @param duration   轮播间隔
      * @param scrollTime 轮播时间（一张图片滚动的时间）
      */
-    public void startPlayLoop(List<Banner> banner, int duration, int scrollTime) {
+    public void startPlayLoop(List<BBanner> BBanner, int duration, int scrollTime) {
         mDuration = duration;
         mScrollTime = scrollTime;
-        startPlayLoop(banner);
+        startPlayLoop(BBanner);
 
     }
 
     /**
      * 开始图片的轮播
      *
-     * @param banner
+     * @param BBanner
      */
-    public void startPlayLoop(List<Banner> banner) {
+    public void startPlayLoop(List<BBanner> BBanner) {
         if (mAdapter == null) {
-            mAdapter = new BannerAdapter(mContext, banner);
+            mAdapter = new BannerAdapter(mContext, BBanner);
             this.setAdapter(mAdapter);
             try {
                 Field field = ViewPager.class.getDeclaredField("mScroller");

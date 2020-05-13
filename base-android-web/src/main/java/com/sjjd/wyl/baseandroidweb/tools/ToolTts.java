@@ -3,6 +3,7 @@ package com.sjjd.wyl.baseandroidweb.tools;
 import android.content.Context;
 import android.os.Environment;
 
+import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.unisound.client.SpeechConstants;
 import com.unisound.client.SpeechSynthesizer;
 import com.unisound.client.SpeechSynthesizerListener;
@@ -138,7 +139,7 @@ public class ToolTts {
         // 设置后端模型
         mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, defaultDir + backName);
         mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_SPEED, 30);
-        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_VOLUME, 50);
+        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_VOLUME, 100);
 
         // 设置回调监听
         mTTSPlayer.setTTSListener(new SpeechSynthesizerListener() {
@@ -200,5 +201,17 @@ public class ToolTts {
         // 初始化合成引擎
         int mInit = mTTSPlayer.init("");
         ToolLog.e(TAG, "initTts: " + mInit);
+    }
+
+    public void initTtsSetting(BVoiceSetting mVoiceSetting) {
+        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_VOLUME, 100);
+        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_SPEED, (mVoiceSetting.getVoSpeed().length() > 0 ? Integer.parseInt(mVoiceSetting.getVoSpeed()) * 10 : 30));
+        /*voiceFormat = mVoiceSetting.getVoFormat();
+        String mNumber = mVoiceSetting.getVoNumber();
+        if (mNumber.length() > 0) {
+            voiceCount = Integer.parseInt(mNumber);
+            voiceCount = voiceCount > 0 ? voiceCount : 1;
+        }*/
+        //  mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, TTSManager.getInstance(mContext).defaultDir + TTSManager.getInstance(mContext).backName);
     }
 }

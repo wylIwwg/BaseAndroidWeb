@@ -5,8 +5,8 @@ import android.os.Environment;
 import android.util.Base64;
 
 import com.alibaba.fastjson.JSON;
-import com.sjjd.wyl.baseandroidweb.bean.Register;
-import com.sjjd.wyl.baseandroidweb.bean.RegisterResult;
+import com.sjjd.wyl.baseandroidweb.bean.BRegister;
+import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -27,7 +27,7 @@ public class ToolRegister {
 
     private static String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCA3aNm/ra4JgBYZzABSy5TAepEuSCE2x8OqBwtCAXITv/Ei0cn/l09ot4kIYXHZQ9hZ+B1W558AGAxfHZkrYZNj1Hn53AXVqw4/ojeP3RyfcXo8GJom/F9+1kd56NqEm/iv2ETB3vcrGwFJOldy7lMEXfHDtFQaj+i2U+eVfckUQIDAQAB";
     private static String privateKey = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIDdo2b+trgmAFhnMAFLLlMB6kS5IITbHw6oHC0IBchO/8SLRyf+XT2i3iQhhcdlD2Fn4HVbnnwAYDF8dmSthk2PUefncBdWrDj+iN4/dHJ9xejwYmib8X37WR3no2oSb+K/YRMHe9ysbAUk6V3LuUwRd8cO0VBqP6LZT55V9yRRAgMBAAECgYBq5vKp+33az/OTYq6pNBQO2lTcg/MdI6XlA8Kz/KbHX/m/s4bo/5OcESNVN9YB7q1Osdy7nrCfz7P8+XJB3M2/FFTm9iHsu24P6P1IxvjV05jir8g7ycs4RoZuxk2+2Ln8Kd6H+0M7qL528os5YRWu0PUhMOR1y103pqWT20UTkQJBAMwFoJ9xvcaH558Iqy/rPpre/25SyfnZbq/KrI2tv18ItfW5flXq3dfVrOYy9i6zWPu9gL9npuPjY5wK3mhdpyUCQQChsk0iT1+uyFhdg0VJeV4+fjd6Fukq7NjqRUIWGXxHoondtLM4qe7rcWMkFXN0U0gZH3XE/KRqrEM20jsXMma9AkEAwoiHHCDe2+MQJiKk378F5bPFiFMmRLZfBP1SRJErzRjILzGcVZ3pw3f5MVHcTLEzom2Rym+xwM87VjlC0e6ihQJAdoE1lMK1bmR4lrhhbFLd5lEcmYb3BjWlWDTAFXBCLEIMZodLnmi0qKtmLIjoH8X1niv3ZRJ/8YokjKYRFpQixQJAXP70G3X9n/OaPR2uCATh2LGcaaLBHBiqKcLGxmkfFTlbl811nG+sW5gyWIhiv+3/JmCmKCTTRhWTjs/YjKdAeQ==";
-    private static final String TAG = " Register ";
+    private static final String TAG = " BRegister ";
     private static String PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/sjjd";
 
     //构建Cipher实例时所传入的的字符串，默认为"RSA/NONE/PKCS1Padding"  
@@ -39,9 +39,9 @@ public class ToolRegister {
 
     private static ToolRegister instance;
     private static Context mContext;
-    private Register mRegister;
+    private BRegister mRegister;
 
-    public Register getRegister() {
+    public BRegister getRegister() {
         return mRegister;
     }
 
@@ -79,7 +79,7 @@ public class ToolRegister {
     public String register2Base64(boolean just64, String mark) {
 
         String mac = ToolDevice.getMachineHardwareAddress();
-        Register r = new Register();
+        BRegister r = new BRegister();
         r.setIdentity(mac);
         r.setMark(mark);
         String sb = JSON.toJSONString(r);
@@ -95,7 +95,7 @@ public class ToolRegister {
             result = Base64.encodeToString(mEncode, base64Mode);
         }
 
-        ToolLog.e(TAG, "Register: 加密后的数据： " + result);
+        ToolLog.e(TAG, "BRegister: 加密后的数据： " + result);
         return result;
 
     }
@@ -114,7 +114,7 @@ public class ToolRegister {
             String result = str2Regsiter(data);//解密数据
             ToolLog.e(TAG, "registerDevice: 允许注册： " + result);
             if (result != null) {
-                mRegister = JSON.parseObject(result, Register.class);
+                mRegister = JSON.parseObject(result, BRegister.class);
                 if (mRegister != null) {
                     String mLimit = mRegister.getLimit();
                     if (mLimit != null && mLimit.length() > 0) {
@@ -147,7 +147,7 @@ public class ToolRegister {
     }
 
 
-    public Register getRegisterText() {
+    public BRegister getRegisterText() {
 
         try {
             File mFile = new File(PATH);
@@ -158,19 +158,20 @@ public class ToolRegister {
                 if (data != null && data.length() > 0) {
 
                     String result = str2Regsiter(data);//解密获取明文数据json
-                    return JSON.parseObject(result, Register.class);//将数据转成对象
+                    return JSON.parseObject(result, BRegister.class);//将数据转成对象
                 }
             }//文件不存在 表示未注册
 
         } catch (Exception e) {
             e.printStackTrace();
+
         }
 
         return null;
     }
 
-    public RegisterResult checkDeviceRegisteredPhp() {
-        RegisterResult mResult = new RegisterResult();
+    public BRegisterResult checkDeviceRegisteredPhp() {
+        BRegisterResult mResult = new BRegisterResult();
 
         try {
             this.mRegister = this.getRegisterText();
@@ -222,14 +223,15 @@ public class ToolRegister {
 
         return mResult;
     }
+
     /**
      * 检测设备是否注册
      * 设备注册信息
      *
      * @return
      */
-    public RegisterResult checkDeviceRegisteredJava() {
-        RegisterResult mResult = new RegisterResult();
+    public BRegisterResult checkDeviceRegisteredJava() {
+        BRegisterResult mResult = new BRegisterResult();
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
@@ -280,6 +282,63 @@ public class ToolRegister {
 
     }
 
+    /**
+     * 检测设备是否注册
+     * 设备注册信息
+     *
+     * @return
+     */
+    public BRegisterResult checkDeviceRegistered() {
+        BRegisterResult mResult = new BRegisterResult();
+        try {
+            this.mRegister = this.getRegisterText();
+            if (this.mRegister != null) {
+                String mac = ToolDevice.getMacFromCatOrder();
+                //未获取到mac
+                if (mac == null || mac.equals("02:00:00:00:00:00")) {
+                  //  Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
+                    ToolSP.init(mContext);
+                    mResult.setRegisterCode(0);
+                    mResult.setRegistered(false);
+                    mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+                    return mResult;
+                }
+
+                if (this.mRegister.getIdentity().equals(mac)) {
+                    String mLimit = this.mRegister.getLimit();
+                    if (mLimit != null && mLimit.length() > 0) {
+                        int mInt = Integer.parseInt(mLimit);
+                        if (mInt <= -1) {
+                            //永久
+                            mResult.setRegistered(true);
+                            mResult.setRegisterCode(1);
+                        } else if (mInt > 0) {
+                            mResult.setRegistered(true);
+                            mResult.setRegisterCode(1);
+                            long rt = Long.parseLong(this.mRegister.getDate());
+                            long mMillis = System.currentTimeMillis();
+                            Date newDate2 = new Date(rt + (long) mInt * 24L * 60L * 60L * 1000L);
+                            if (newDate2.getTime() < mMillis) {
+                                mResult.setRegisterCode(2);
+                                mResult.setRegistered(false);
+                                mResult.setRegisterStr(register2Base64(false, ToolSP.getDIYString("app_type")));
+                            }
+                        }
+                        return mResult;
+                    }
+                }
+            } else {
+                //未获取到注册信息
+                mResult.setRegisterCode(0);
+                mResult.setRegistered(false);
+                mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+            }
+        } catch (Exception var10) {
+            var10.printStackTrace();
+        }
+        return mResult;
+
+    }
 
     /**
      * 将字符串解密为明文数据
@@ -296,7 +355,7 @@ public class ToolRegister {
             String b64 = Base64.encodeToString(mDecryptBytes, base64Mode);
             byte[] mEncode = Base64.decode(b64, base64Mode);
             String result = new String(mEncode);
-            ToolLog.e(TAG, "Register: 解密后的数据： " + result);
+            ToolLog.e(TAG, "BRegister: 解密后的数据： " + result);
             return result;
         } catch (Exception e) {
             e.printStackTrace();

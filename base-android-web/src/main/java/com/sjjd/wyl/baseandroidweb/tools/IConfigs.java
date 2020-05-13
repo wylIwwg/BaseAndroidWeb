@@ -15,7 +15,7 @@ public interface IConfigs {
     String PATH_APK = PATH_ROOT + "apk";
     String PATH_TTS = PATH_ROOT + "tts";
     String PATH_LOG = PATH_ROOT + "log";
-    String PATH_MAC =  Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/mac";
+    String PATH_MAC = PATH_ROOT + "mac";
 
     /**
      * 网络请求相关
@@ -63,6 +63,8 @@ public interface IConfigs {
     String SP_APP_TYPE = "app_type";
 
 
+    String SP_VOICE_SWICH = "flag";
+
     String SP_DEPART_NAME = "depart_n";//科室名
     String SP_DEPART_ID = "depart_id";//科室id
 
@@ -73,6 +75,15 @@ public interface IConfigs {
     String SP_SETTING_DELAY_TIME = "delay";//延迟滚动时间
     String SP_SETTING_BACK_TIME = "back";//界面操作返回时间
 
+    String SP_FORCED_URL = "forcedurl";
+    String SP_FORCED_STATE = "forcedstate";
+    String SP_PROGRAM_ID = "proid";
+    String SP_APK_ID = "apkid";
+    String SP_TARGET_APP = "target";
+    String SP_APK_VERSION_CODE = "code";
+    String SP_CLIENT_ID = "client_id";
+    String SP_PATH_DATA = "source";
+    String SP_PATH_DATA_BACKUP = "source_backup";
 
     int DEVICE_FORBIDDEN = 0;//未注册
     int DEVICE_REGISTERED = 1;//已注册

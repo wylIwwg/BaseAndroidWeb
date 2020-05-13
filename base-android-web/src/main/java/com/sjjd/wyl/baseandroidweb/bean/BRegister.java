@@ -3,7 +3,7 @@ package com.sjjd.wyl.baseandroidweb.bean;
 /**
  * Created by wyl on 2019/4/1.
  */
-public class Register {
+public class BRegister {
     private String identity;//标识 如MAC值
     private String date;//注册时间
     private String limit;//注册限制/天数

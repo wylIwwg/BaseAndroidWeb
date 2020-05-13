@@ -1,4 +1,4 @@
-package com.sjjd.wyl.baseandroidweb.socket;
+package com.sjjd.wyl.baseandroidweb.tekcos;
 
 /**
  * Created by wyl on 2018/11/22.

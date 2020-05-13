@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by wyl on 2019/5/16.
  */
-public class Address implements Serializable {
+public class BAddress implements Serializable {
     public static class Unit implements Serializable {
         /// <summary>
         /// Unitid

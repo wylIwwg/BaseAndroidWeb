@@ -1,4 +1,4 @@
-package com.sjjd.wyl.baseandroidweb.socket;
+package com.sjjd.wyl.baseandroidweb.tekcos;
 
 import java.util.Timer;
 import java.util.TimerTask;

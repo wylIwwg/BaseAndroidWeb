@@ -3,7 +3,7 @@ package com.sjjd.wyl.baseandroidweb.bean;
 /**
  * Created by wyl on 2019/5/16.
  */
-public class ResultRegister {
+public class BResultRegister {
     public class Data {
         /// <summary>
         /// 注册码

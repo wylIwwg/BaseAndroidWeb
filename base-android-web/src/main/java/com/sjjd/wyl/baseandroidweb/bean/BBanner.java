@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by wyl on 2019/3/26.
  */
-public class Banner implements Serializable {
+public class BBanner implements Serializable {
     private String url;
     private String title;
     private String id;

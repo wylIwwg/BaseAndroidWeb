@@ -52,6 +52,10 @@ public class BaseApp extends Application {
         super.onCreate();
         new ANRThread().start();
         mContext = this;
+        Toasty.Config.getInstance()
+                .allowQueue(false)
+                .setTextSize(20)
+                .apply();
         ToolSP.init(this);
     }
 
@@ -196,7 +200,7 @@ public class BaseApp extends Application {
     }
 
 
-    public static final String LOG_SUFFIX = ".log";
+    public static final String LOG_SUFFIX = ".txt";
     private static final String CHARSET = "UTF-8";
 
     public boolean saveLogFile2SDcard(String logString, boolean isAppend) {
