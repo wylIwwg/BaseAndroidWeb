@@ -84,6 +84,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public String voiceFormat = "请(line)(name)到(department)(room)(doctor)就诊";
 
     public Presenter mPresenter;
+    public SimpleDateFormat mDateFormat;
+    public SimpleDateFormat mTimeFormat;
+    public SimpleDateFormat mWeekFormat;
+    public TimeThread mTimeThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,9 +102,8 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mDataHandler.setMessageListener(this);
         mMac = ToolDevice.getMac();
 
-        mTimeThread = new TimeThread(mContext, mDataHandler, "yyyy-MM-dd", "HH:mm", "EEEE");
-        mTimeThread.sleep_time = 1000;
-        mTimeThread.start();
+        startLocalTime();
+
 
         mTimeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
         mDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
@@ -114,6 +117,16 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 isRegistered = registerResult.isRegistered();
             }
         });
+    }
+
+    public void startLocalTime() {
+        if (mTimeThread != null) {
+            mTimeThread.onDestroy();
+            mTimeThread = null;
+        }
+        mTimeThread = new TimeThread(mContext, mDataHandler, "yyyy-MM-dd", "HH:mm", "EEEE");
+        mTimeThread.sleep_time = 1000;
+        mTimeThread.start();
     }
 
     public void hasPermission() {
@@ -168,12 +181,19 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
     @Override
-    public void showError(BResult result) {
-
+    public void showError(final BResult result) {
+        ToolLog.e(ERROR, JSON.toJSONString(result));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+            }
+        });
     }
 
     @Override
     public void showError(final String error) {
+        ToolLog.e(ERROR, error);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -193,9 +213,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mPresenter.uploadScreen(url, res, sessionId);
     }
 
-    public SimpleDateFormat mDateFormat;
-    public SimpleDateFormat mTimeFormat;
-    public SimpleDateFormat mWeekFormat;
 
     @Override
     public void userHandler(Message msg) {
@@ -223,6 +240,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                     switch (mType) {
                         case "pong"://心跳处理
                             Date mDate;
+                            feed();
                             if (obj.contains("date")) {
                                 long mTime = mObject.getLong("date");
                                 if (mTime > 0) {
@@ -289,7 +307,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                                 downloadApk(mHost + link);
 
                             break;
-                        case "voice"://通知语音播报
+                       /* case "voice"://通知语音播报
                             ToolLog.e(TAG, "userHandler: voice  VoiceFlag = " + mVoiceSwitch + "   " + msg.obj.toString());
                             BVoice mVoiceBean = JSON.parseObject(mObject.get("data").toString(), BVoice.class);
                             if ("1".equals(mVoiceSwitch)) {
@@ -304,7 +322,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             }
 
                             break;
-
+*/
                         case "register"://在线注册
                             String mRegister_code = mObject.getString("register_code");
                             boolean registered = ToolRegister.getInstance(mContext).registerDevice(mRegister_code);
@@ -326,9 +344,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             String ping = "{\"type\":\"ping\",\"id\":\"" + clientId + "\"}";
                             mPulseData.setPing(ping);
                             mSocketManager.getPulseManager().setPulseSendable(mPulseData);
-
-                            mTimeThread.onDestroy();
-                            mTimeThread = null;
+                            if (mTimeThread != null) {
+                                mTimeThread.onDestroy();
+                                mTimeThread = null;
+                            }
                             addDevice(clientId);
                             break;
 
@@ -374,8 +393,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             mSocketManager = null;
         }
     }
-
-    public TimeThread mTimeThread;
 
 
     public void hardReboot(final int l) {
@@ -684,6 +701,8 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             ToolLog.e(TAG, "onSocketDisconnection");
             LogUtils.file(SOCKET, " 【socket断开连接】");
             showError("socket断开连接");
+
+            startLocalTime();
 
         }
 

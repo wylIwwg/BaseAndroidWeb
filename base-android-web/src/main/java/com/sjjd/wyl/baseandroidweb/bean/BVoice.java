@@ -8,12 +8,48 @@ public class BVoice {
     private String patientName;
     private String patientNum;
     private String patientId;
+    private String clinicName;
+    private String departName;
+    private String clinicId;
+    private String departId;
     private String room;
     private String depart;
     private String doctor;
     private int queNum;
     private int qId;
     private String txt;
+
+    public String getClinicName() {
+        return clinicName == null ? "" : clinicName;
+    }
+
+    public void setClinicName(String clinicName) {
+        this.clinicName = clinicName;
+    }
+
+    public String getDepartName() {
+        return departName == null ? "" : departName;
+    }
+
+    public void setDepartName(String departName) {
+        this.departName = departName;
+    }
+
+    public String getClinicId() {
+        return clinicId == null ? "" : clinicId;
+    }
+
+    public void setClinicId(String clinicId) {
+        this.clinicId = clinicId;
+    }
+
+    public String getDepartId() {
+        return departId == null ? "" : departId;
+    }
+
+    public void setDepartId(String departId) {
+        this.departId = departId;
+    }
 
     public String getDepart() {
         return depart == null ? "" : depart;

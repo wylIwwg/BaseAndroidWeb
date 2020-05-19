@@ -1,10 +1,8 @@
 package com.sjjd.wyl.baseandroidweb.bean;
 
-import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.xuhao.didi.core.iocore.interfaces.IPulseSendable;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
 /**
  * Created by wyl on 2020/5/6.
@@ -27,7 +25,6 @@ public class BPulse implements IPulseSendable {
         result[6] = 1;
         result[7] = 1;
         System.arraycopy(body, 0, result, 8, body.length);
-        ToolLog.e("parse", Arrays.toString(result));
         return result;
         //[0, 0, 0, 15, 0, 0, 0, 123, 34, 116, 121, 112, 101, 34, 58, 34, 112, 105, 110, 103, 34, 125]
     }
