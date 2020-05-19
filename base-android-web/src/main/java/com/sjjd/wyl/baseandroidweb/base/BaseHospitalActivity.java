@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.blankj.utilcode.util.LogUtils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
@@ -59,7 +60,10 @@ import java.util.Map;
 import es.dmoral.toasty.Toasty;
 
 public class BaseHospitalActivity extends AppCompatActivity implements BaseDataHandler.MessageListener, IView {
-    public String TAG = this.getClass().getSimpleName();
+    public String TAG = "【" + this.getClass().getSimpleName() + "】";
+    public static final String SOCKET = "【socket】";
+    public static final String HTTP = "【http】";
+    public static final String ERROR = "【error】";
     public Context mContext;
     public LinearLayout mBaseLlRoot;//根布局
     public BaseDataHandler mDataHandler;
@@ -211,6 +215,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 break;
             case IConfigs.MSG_SOCKET_RECEIVED:
                 String obj = msg.obj.toString();
+                LogUtils.file(SOCKET, obj);
                 ToolLog.e(TAG, "handleMessage: socket  " + obj);
                 try {
                     JSONObject mObject = JSONObject.parseObject(obj);
@@ -241,6 +246,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                         case "voiceSwitch"://flag
                             mVoiceSwitch = mObject.getString("flag");
                             ToolSP.putDIYString(IConfigs.SP_VOICE_SWICH, mVoiceSwitch);
+
                             break;
 
                         case "timing"://定时开关机
@@ -662,6 +668,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         @Override
         public void onSocketConnectionSuccess(ConnectionInfo info, String action) {
             ToolLog.e(TAG, "连接成功(Connecting Successful)");
+            LogUtils.file(SOCKET, " 【socket 连接成功】");
             //连接成功其他操作...
             //链式编程调用,给心跳管理器设置心跳数据,一个连接只有一个心跳管理器,因此数据只用设置一次,如果断开请再次设置.
            /* OkSocket.open(info)
@@ -675,6 +682,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         @Override
         public void onSocketDisconnection(ConnectionInfo info, String action, Exception e) {
             ToolLog.e(TAG, "onSocketDisconnection");
+            LogUtils.file(SOCKET, " 【socket断开连接】");
             showError("socket断开连接");
 
         }
@@ -682,6 +690,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         @Override
         public void onSocketConnectionFailed(ConnectionInfo info, String action, Exception e) {
             ToolLog.e(TAG, "onSocketConnectionFailed");
+            LogUtils.file(SOCKET, " 【socket连接失败】");
             showError("socket连接失败");
         }
 

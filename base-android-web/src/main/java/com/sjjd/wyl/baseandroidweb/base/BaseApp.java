@@ -6,6 +6,8 @@ import android.content.Context;
 import android.os.Environment;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.LogUtils;
+import com.blankj.utilcode.util.Utils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.cache.CacheEntity;
 import com.lzy.okgo.cache.CacheMode;
@@ -57,6 +59,9 @@ public class BaseApp extends Application {
                 .setTextSize(20)
                 .apply();
         ToolSP.init(this);
+
+        Utils.init(this);
+        LogUtils.getConfig().setDir(LOG_PATH).setFilePrefix("log");
     }
 
 

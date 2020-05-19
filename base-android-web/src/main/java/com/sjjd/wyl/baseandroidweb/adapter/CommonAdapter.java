@@ -47,7 +47,8 @@ public abstract class CommonAdapter<T> extends RecyclerView.Adapter<ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        convert(holder, mDatas.get(position % mDatas.size()), position);
+        if (mDatas != null && mDatas.size() > 0)
+            convert(holder, mDatas.get(position % mDatas.size()), position);
     }
 
     public void onViewHolderCreated(ViewHolder holder, View itemView) {

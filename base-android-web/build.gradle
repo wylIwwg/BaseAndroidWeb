@@ -50,7 +50,7 @@ dependencies {
     //腾讯bugly
     //implementation 'com.tencent.bugly:crashreport:latest.release'
     implementation 'com.alibaba:fastjson:1.2.59'
-
+    implementation 'com.blankj:utilcode:1.23.7'
     implementation 'com.github.GrenderG:Toasty:1.4.2'
     //必须使用
     implementation 'com.lzy.net:okgo:3.0.4'
