@@ -82,7 +82,8 @@ public class TimeThread extends BaseThread {
         Message mMessage = Message.obtain();
         mMessage.obj = result;
         mMessage.what = IConfigs.NET_TIME_CHANGED;
-        mHandler.sendMessage(mMessage);
+        if (mHandler != null)
+            mHandler.sendMessage(mMessage);
 
 
     }

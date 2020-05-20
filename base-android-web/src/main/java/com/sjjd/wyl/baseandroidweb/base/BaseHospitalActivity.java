@@ -94,15 +94,13 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_base);
         mContext = this;
-        mPresenter = new Presenter(mContext, this);
-
-        ToolSP.init(mContext);
         mBaseLlRoot = findViewById(R.id.baseLlRoot);
+
+        mPresenter = new Presenter(mContext, this);
         mDataHandler = new BaseDataHandler(this);
         mDataHandler.setMessageListener(this);
-        mMac = ToolDevice.getMac();
 
-        startLocalTime();
+        mMac = ToolDevice.getMac();
 
 
         mTimeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
@@ -117,6 +115,8 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 isRegistered = registerResult.isRegistered();
             }
         });
+
+        startLocalTime();
     }
 
     public void startLocalTime() {
@@ -125,7 +125,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             mTimeThread = null;
         }
         mTimeThread = new TimeThread(mContext, mDataHandler, "yyyy-MM-dd", "HH:mm", "EEEE");
-        mTimeThread.sleep_time = 1000;
+        mTimeThread.sleep_time = 1000 * 3;
         mTimeThread.start();
     }
 
@@ -156,7 +156,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         }
 
         if (mIP.length() < 6) {
-            Toasty.error(mContext, "请设置ip与端口号", Toast.LENGTH_LONG, true).show();
+            showError("请设置ip与端口号");
             return;
         }
         if (mHttpPort.length() < 1) {
@@ -493,7 +493,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                                             super.onError(response);
                                             //网络请求出错 重复呼叫
                                             isSpeeking = false;
-                                            Toasty.error(mContext, response.body(), Toast.LENGTH_LONG, true).show();
+                                            showError("播放语音完成 " + response.body());
                                             ttsSpeak();
                                         }
                                     });

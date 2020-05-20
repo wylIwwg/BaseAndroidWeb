@@ -78,6 +78,11 @@ public class Presenter {
         }
     }
 
+    /**
+     * 上传日志
+     *
+     * @param url
+     */
     public void uploadLogs(String url) {
         File dir = new File(IConfigs.PATH_LOG);
         if (dir.isDirectory()) {
@@ -132,7 +137,7 @@ public class Presenter {
                         .start();
             }
         } else {
-            mView.showError("请到设置》应用 授权！");
+            mView.showError("请到》设置》应用 授权！");
         }
     }
 

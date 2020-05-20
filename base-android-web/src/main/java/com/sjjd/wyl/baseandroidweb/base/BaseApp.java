@@ -45,7 +45,7 @@ import okhttp3.OkHttpClient;
  */
 public class BaseApp extends Application {
 
-    private static final String TAG = " BaseApp ";
+    public static final String TAG = " 【Application】 ";
     public Context mContext;
     public String LOG_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sjjd/log";
 
@@ -56,7 +56,7 @@ public class BaseApp extends Application {
         mContext = this;
         Toasty.Config.getInstance()
                 .allowQueue(false)
-                .setTextSize(20)
+                .setTextSize(18)
                 .apply();
         ToolSP.init(this);
 
