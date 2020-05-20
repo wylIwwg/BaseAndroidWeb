@@ -221,9 +221,9 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
                 HashMap<String, String> times = (HashMap<String, String>) msg.obj;
                 if (times != null) {
                     //时间
-                    String timeStr = times.get("date");
+                    String timeStr = times.get("time");
                     //日期
-                    String dateStr = times.get("time");
+                    String dateStr = times.get("date");
                     //星期
                     String week = times.get("week");
 
