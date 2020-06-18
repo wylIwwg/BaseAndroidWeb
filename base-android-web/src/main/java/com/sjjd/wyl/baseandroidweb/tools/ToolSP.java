@@ -11,9 +11,9 @@ public class ToolSP {
     static ToolSP mToolSP = new ToolSP();
     static SharedPreferences sp;
 
-    public static ToolSP init(Context context) {
+    public static ToolSP init(Context context, String pkg) {
         if (sp == null) {
-            sp = context.getSharedPreferences("sp", Context.MODE_PRIVATE);
+            sp = context.getSharedPreferences(pkg, Context.MODE_PRIVATE);
         }
         return mToolSP;
     }

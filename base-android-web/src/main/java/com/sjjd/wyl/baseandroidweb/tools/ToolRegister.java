@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Date;
 
 import es.dmoral.toasty.Toasty;
@@ -124,7 +125,7 @@ public class ToolRegister {
                         } else {
                             File mFile = new File(PATH);
                             try {
-                                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mFile, false)));
+                                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mFile, false), Charset.forName("UTF-8")));
                                 bw.write(data);//写入密文数据
                                 bw.flush();
                                 bw.close();
@@ -147,12 +148,17 @@ public class ToolRegister {
     }
 
 
+    /**
+     * 获取注册数据  在 PATH 目录/文件
+     *
+     * @return
+     */
     public BRegister getRegisterText() {
 
         try {
             File mFile = new File(PATH);
             if (mFile.exists()) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(mFile)));
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(mFile), Charset.forName("UTF-8")));
                 String data = br.readLine();
                 br.close();
                 if (data != null && data.length() > 0) {
@@ -170,22 +176,29 @@ public class ToolRegister {
         return null;
     }
 
+    /**
+     * PHP   1 未注册  2 注册  3 过期
+     * JAVA  0 未注册  1 注册  2 过期
+     * 哎 就是不统一 能怎么办？？
+     *
+     * @return
+     */
     public BRegisterResult checkDeviceRegisteredPhp() {
         BRegisterResult mResult = new BRegisterResult();
-
+        mResult.setRegisterCode(1);
+        mResult.setRegistered(false);
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
                 String mac = ToolDevice.getMac();
                 if (mac == null || mac.equals("02:00:00:00:00:00")) {
                     Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
-                    ToolSP.init(mContext);
                     mResult.setRegisterCode(1);
                     mResult.setRegistered(false);
                     mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
                     return mResult;
                 }
-
+                //检测mac是否一致
                 if (this.mRegister.getIdentity().equals(mac)) {
                     String mLimit = this.mRegister.getLimit();
                     this.mRegister.getDate();
@@ -227,18 +240,21 @@ public class ToolRegister {
     /**
      * 检测设备是否注册
      * 设备注册信息
+     * * PHP   1 未注册  2 注册  3 过期
+     * * JAVA  0 未注册  1 注册  2 过期
      *
      * @return
      */
     public BRegisterResult checkDeviceRegisteredJava() {
         BRegisterResult mResult = new BRegisterResult();
+        mResult.setRegistered(false);
+        mResult.setRegisterCode(0);
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
                 String mac = ToolDevice.getMac();
                 if (mac == null || mac.equals("02:00:00:00:00:00")) {
                     Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
-                    ToolSP.init(mContext);
                     mResult.setRegisterCode(0);
                     mResult.setRegistered(false);
                     mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
@@ -271,7 +287,7 @@ public class ToolRegister {
                     }
                 }
             } else {
-                mResult.setRegisterCode(1);
+                mResult.setRegisterCode(0);
                 mResult.setRegistered(false);
                 mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
             }
@@ -285,19 +301,21 @@ public class ToolRegister {
     /**
      * 检测设备是否注册
      * 设备注册信息
+     * 统一 0 未注册  1 注册  2 过期
      *
      * @return
      */
     public BRegisterResult checkDeviceRegistered() {
         BRegisterResult mResult = new BRegisterResult();
+        mResult.setRegisterCode(0);
+        mResult.setRegistered(false);
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
-                String mac = ToolDevice.getMacFromCatOrder();
+                String mac = ToolDevice.getMac();
                 //未获取到mac
                 if (mac == null || mac.equals("02:00:00:00:00:00")) {
-                  //  Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
-                    ToolSP.init(mContext);
+                    //  Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
                     mResult.setRegisterCode(0);
                     mResult.setRegistered(false);
                     mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
@@ -327,6 +345,8 @@ public class ToolRegister {
                         return mResult;
                     }
                 }
+                //mac值不一致 不允许注册
+
             } else {
                 //未获取到注册信息
                 mResult.setRegisterCode(0);

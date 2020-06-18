@@ -224,17 +224,17 @@ public class BaseActivityTopBar extends AppCompatActivity {
             mBtnCommit.setBackgroundResource(btnbg);
         }
 
-        etIp.setText(ToolSP.init(mContext).getDIYString(IConfigs.SP_IP));
-        etNum.setText(ToolSP.init(mContext).getDIYString(IConfigs.SP_WINDOW_NUM));
-        etPort.setText(ToolSP.init(mContext).getDIYString(IConfigs.SP_PORT_HTTP));
+        etIp.setText(ToolSP.getDIYString(IConfigs.SP_IP));
+        etNum.setText(ToolSP.getDIYString(IConfigs.SP_WINDOW_NUM));
+        etPort.setText(ToolSP.getDIYString(IConfigs.SP_PORT_HTTP));
         //提交
         mBtnCommit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //重新启动应用
-                ToolSP.init(mContext).putDIYString(IConfigs.SP_IP, etIp.getText().toString());
-                ToolSP.init(mContext).putDIYString(IConfigs.SP_WINDOW_NUM, etNum.getText().toString());
-                ToolSP.init(mContext).putDIYString(IConfigs.SP_PORT_HTTP, etPort.getText().toString());
+                ToolSP.putDIYString(IConfigs.SP_IP, etIp.getText().toString());
+                ToolSP.putDIYString(IConfigs.SP_WINDOW_NUM, etNum.getText().toString());
+                ToolSP.putDIYString(IConfigs.SP_PORT_HTTP, etPort.getText().toString());
                 shouldDestory();
                 new Handler().postDelayed(new Runnable() {
                     @Override

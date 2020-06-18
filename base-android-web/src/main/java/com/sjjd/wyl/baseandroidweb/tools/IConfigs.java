@@ -31,7 +31,7 @@ public interface IConfigs {
     int NET_TIME_CHANGED = 10001;//时间变化
 
     String HOST = "http://%1$s:%2$s";//192.168.2.188:8080
-
+    String HOSTS = "https://%1$s:%2$s";//192.168.2.188:8080
 
     ///*socket*//
     String TYPE = "type";
@@ -56,12 +56,16 @@ public interface IConfigs {
     String SP_PORT_HTTP = "port_http";
     String SP_PORT_SOCKET = "port_socket";//
 
+    /*区域*/
     String SP_WINDOW_NUM = "win_num";//窗口号
     String SP_WINDOW_ID = "win_id";//窗口id
     String SP_ROOM_NUM = "room_num";//房间号
     String SP_ROOM_ID = "room_id";//房间id
     String SP_APP_TYPE = "app_type";
 
+    String SP_UNITID = "unitid";
+    String SP_FLOOR = "floor";
+    String SP_AREA = "area";
 
     String SP_VOICE_SWICH = "flag";
 

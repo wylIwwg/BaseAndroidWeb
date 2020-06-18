@@ -96,7 +96,6 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
         mContext = this;
         mPresenter = new Presenter(mContext, this);
 
-        ToolSP.init(mContext);
         mBaseLlRoot = findViewById(R.id.baseLlRoot);
         mDataHandler = new BaseDataHandler(this);
         mDataHandler.setMessageListener(this);

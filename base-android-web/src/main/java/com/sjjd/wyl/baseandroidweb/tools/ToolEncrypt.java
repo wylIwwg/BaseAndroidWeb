@@ -11,6 +11,7 @@ import android.util.Base64;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -54,21 +55,17 @@ public final class ToolEncrypt {
     /**
      * 随机生成RSA密钥对
      *
-     * @param keyLength
-     *            密钥长度，范围：512～2048<br>
-     *            一般1024
+     * @param keyLength 密钥长度，范围：512～2048<br>
+     *                  一般1024
      * @return
      */
-    public static KeyPair generateRSAKeyPair(int keyLength)
-    {
-        try
-        {
+    public static KeyPair generateRSAKeyPair(int keyLength) {
+        try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(keyLength);
 
             return kpg.genKeyPair();
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
         }
@@ -86,7 +83,7 @@ public final class ToolEncrypt {
      */
     public static String encryptMD2ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptMD2ToString(data.getBytes());
+        return encryptMD2ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -117,7 +114,7 @@ public final class ToolEncrypt {
      */
     public static String encryptMD5ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptMD5ToString(data.getBytes());
+        return encryptMD5ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -129,9 +126,9 @@ public final class ToolEncrypt {
      */
     public static String encryptMD5ToString(final String data, final String salt) {
         if (data == null && salt == null) return "";
-        if (salt == null) return bytes2HexString(encryptMD5(data.getBytes()));
-        if (data == null) return bytes2HexString(encryptMD5(salt.getBytes()));
-        return bytes2HexString(encryptMD5((data + salt).getBytes()));
+        if (salt == null) return bytes2HexString(encryptMD5(data.getBytes(Charset.forName("UTF-8"))));
+        if (data == null) return bytes2HexString(encryptMD5(salt.getBytes(Charset.forName("UTF-8"))));
+        return bytes2HexString(encryptMD5((data + salt).getBytes(Charset.forName("UTF-8"))));
     }
 
     /**
@@ -245,7 +242,7 @@ public final class ToolEncrypt {
      */
     public static String encryptSHA1ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptSHA1ToString(data.getBytes());
+        return encryptSHA1ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -276,7 +273,7 @@ public final class ToolEncrypt {
      */
     public static String encryptSHA224ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptSHA224ToString(data.getBytes());
+        return encryptSHA224ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -307,7 +304,7 @@ public final class ToolEncrypt {
      */
     public static String encryptSHA256ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptSHA256ToString(data.getBytes());
+        return encryptSHA256ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -338,7 +335,7 @@ public final class ToolEncrypt {
      */
     public static String encryptSHA384ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptSHA384ToString(data.getBytes());
+        return encryptSHA384ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -369,7 +366,7 @@ public final class ToolEncrypt {
      */
     public static String encryptSHA512ToString(final String data) {
         if (data == null || data.length() == 0) return "";
-        return encryptSHA512ToString(data.getBytes());
+        return encryptSHA512ToString(data.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -424,7 +421,7 @@ public final class ToolEncrypt {
      */
     public static String encryptHmacMD5ToString(final String data, final String key) {
         if (data == null || data.length() == 0 || key == null || key.length() == 0) return "";
-        return encryptHmacMD5ToString(data.getBytes(), key.getBytes());
+        return encryptHmacMD5ToString(data.getBytes(Charset.forName("UTF-8")), key.getBytes(Charset.forName("UTF-8")));
     }
 
     /**

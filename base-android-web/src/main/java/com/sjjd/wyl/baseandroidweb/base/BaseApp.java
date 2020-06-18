@@ -3,7 +3,8 @@ package com.sjjd.wyl.baseandroidweb.base;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.os.Environment;
+import android.content.Intent;
+import android.os.Handler;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.LogUtils;
@@ -14,7 +15,10 @@ import com.lzy.okgo.cache.CacheMode;
 import com.lzy.okgo.interceptor.HttpLoggingInterceptor;
 import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.anr.ANRThread;
+import com.sjjd.wyl.baseandroidweb.appTopService.AppTopLifecycleHandler;
+import com.sjjd.wyl.baseandroidweb.appTopService.AppTopService;
 import com.sjjd.wyl.baseandroidweb.crash.config.CrashConfig;
+import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
@@ -22,14 +26,9 @@ import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.runtime.Permission;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -47,21 +46,37 @@ public class BaseApp extends Application {
 
     public static final String TAG = " 【Application】 ";
     public Context mContext;
-    public String LOG_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sjjd/log";
 
     @Override
     public void onCreate() {
         super.onCreate();
         new ANRThread().start();
-        mContext = this;
+        mContext = getApplicationContext();
         Toasty.Config.getInstance()
                 .allowQueue(false)
                 .setTextSize(18)
                 .apply();
-        ToolSP.init(this);
 
-        Utils.init(this);
-        LogUtils.getConfig().setDir(LOG_PATH).setFilePrefix("log");
+        ToolSP.init(mContext, getPackageName());
+
+        Utils.init(mContext);
+
+        LogUtils.getConfig().setDir(IConfigs.PATH_LOG).setFilePrefix("log");
+
+
+    }
+
+    public void initTopService() {
+        registerActivityLifecycleCallbacks(new AppTopLifecycleHandler());
+
+        //3秒之后启动服务
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent service = new Intent(getApplicationContext(), AppTopService.class);
+                startService(service);
+            }
+        }, 5000);
     }
 
 
@@ -165,7 +180,7 @@ public class BaseApp extends Application {
     //保存错误日志
     private void handleException(Throwable ex) {
         String s = formatCrashInfo(ex);
-        saveLogFile2SDcard(s, true);
+        LogUtils.file(TAG, s);
         ToolApp.restartApp(mContext);
     }
 
@@ -205,71 +220,4 @@ public class BaseApp extends Application {
     }
 
 
-    public static final String LOG_SUFFIX = ".txt";
-    private static final String CHARSET = "UTF-8";
-
-    public boolean saveLogFile2SDcard(String logString, boolean isAppend) {
-        if (!isSDcardExsit()) {
-            return false;
-        }
-        try {
-            File logDir = new File(LOG_PATH);
-            if (!logDir.exists()) {
-                logDir.mkdirs();
-            }
-            File logFile = new File(LOG_PATH, getLogDate() + LOG_SUFFIX);
-            FileOutputStream fos = new FileOutputStream(logFile, isAppend);
-            fos.write(logString.getBytes(CHARSET));
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isSDcardExsit() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
-    }
-
-
-    private String getLogDate() {
-        long l = System.currentTimeMillis();
-        SimpleDateFormat mDateFormat;
-        mDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
-        Date mDate = new Date(l);
-        //时间
-        String timeStr = mDateFormat.format(mDate);
-        return timeStr;
-    }
-
-
-    public static String getMD5Str(String str) {
-        MessageDigest messageDigest = null;
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-            messageDigest.reset();
-            messageDigest.update(str.getBytes("UTF-8"));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return "";
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return "";
-        }
-        byte[] byteArray = messageDigest.digest();
-        StringBuffer md5StrBuff = new StringBuffer();
-        for (int i = 0; i < byteArray.length; i++) {
-            if (Integer.toHexString(0xFF & byteArray[i]).length() == 1)
-                md5StrBuff.append("0").append(Integer.toHexString(0xFF & byteArray[i]));
-            else
-                md5StrBuff.append(Integer.toHexString(0xFF & byteArray[i]));
-        }
-
-        return md5StrBuff.toString();
-    }
 }

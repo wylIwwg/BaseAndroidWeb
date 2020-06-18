@@ -266,7 +266,10 @@ public class ToolDevice {
         return buf.toString();
     }
 
-
+    /**
+     * 获取mac地址  wifi  网口
+     * @return
+     */
     public static String getMacFromCatOrder() {
         String str = "";
         String macSerial = "";
@@ -294,7 +297,7 @@ public class ToolDevice {
             }
 
         }
-        return macSerial;
+        return macSerial.toUpperCase();
     }
 
 

@@ -23,7 +23,6 @@ import com.sjjd.wyl.baseandroidweb.bean.BResult;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
-import com.sjjd.wyl.baseandroidweb.listeners.RegisterListener;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
@@ -59,7 +58,7 @@ import java.util.Map;
 
 import es.dmoral.toasty.Toasty;
 
-public class BaseHospitalActivity extends AppCompatActivity implements BaseDataHandler.MessageListener, IView {
+public class BasePhpActivity extends AppCompatActivity implements BaseDataHandler.MessageListener, IView {
     public String TAG = "【" + this.getClass().getSimpleName() + "】";
     public static final String SOCKET = "【socket】";
     public static final String HTTP = "【http】";
@@ -107,20 +106,8 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
         mWeekFormat = new SimpleDateFormat("EEEE", Locale.CHINA);
 
-        mPresenter.checkRegister(new RegisterListener() {
-            @Override
-            public void RegisterCallBack(BRegisterResult registerResult) {
-                mRegisterCode = registerResult.getRegisterCode();
-                mRegisterViper = registerResult.getRegisterStr();
-                isRegistered = registerResult.isRegistered();
-            }
-        });
-
     }
 
-    /**
-     * 开启本地时间线程
-     */
     public void startLocalTime() {
         if (mTimeThread != null) {
             mTimeThread.onDestroy();
@@ -146,7 +133,14 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
     }
 
-    public void initSetting() {
+    public void initData() {
+        initListener();
+
+        BRegisterResult mRegisterResult = ToolRegister.getInstance(mContext).checkDeviceRegisteredPhp();
+        mRegisterCode = mRegisterResult.getRegisterCode();
+        isRegistered = mRegisterResult.isRegistered();
+        mRegisterViper = mRegisterResult.getRegisterStr();
+
         mIP = ToolSP.getDIYString(IConfigs.SP_IP);
         mHttpPort = ToolSP.getDIYString(IConfigs.SP_PORT_HTTP);
         mSocketPort = ToolSP.getDIYString(IConfigs.SP_PORT_SOCKET);
@@ -160,14 +154,9 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             return;
         }
         if (mHttpPort.length() < 1) {
-            mHttpPort = "8080";
+            mHttpPort = "80";
         }
         mHost = String.format(IConfigs.HOST, mIP, mHttpPort);
-
-    }
-
-    public void initData() {
-        initListener();
 
 
     }
@@ -188,7 +177,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     @Override
     public void showError(final BResult result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
-        LogUtils.file(ERROR, JSON.toJSONString(result));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -200,7 +188,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     @Override
     public void showError(final String error) {
         ToolLog.e(ERROR, error);
-        LogUtils.file(ERROR, error);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -211,14 +198,12 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
     @Override
     public void downloadApk(String url) {
-        LogUtils.file(HTTP, "【下载更新】" + url);
         mPresenter.downloadApk(url);
     }
 
     @Override
     public void uploadScreen(String url, String sessionId) {
         String res = ToolCommon.getBitmapString(mBaseLlRoot);
-        LogUtils.file(HTTP, "【上传截图】" + url);
         mPresenter.uploadScreen(url, res, sessionId);
     }
 
@@ -242,6 +227,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             case IConfigs.MSG_SOCKET_RECEIVED:
                 String obj = msg.obj.toString();
                 LogUtils.file(SOCKET, obj);
+
                 ToolLog.e(TAG, "handleMessage: socket  " + obj);
                 try {
                     JSONObject mObject = JSONObject.parseObject(obj);
@@ -250,8 +236,8 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                         case "pong"://心跳处理
                             Date mDate;
                             feed();
-                            if (obj.contains("date")) {
-                                long mTime = mObject.getLong("date");
+                            if (obj.contains("timestamp")) {
+                                long mTime = mObject.getLong("timestamp");
                                 if (mTime > 0) {
                                     mDate = new Date(mTime);
                                 } else {
@@ -269,14 +255,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             //星期
                             String week = mWeekFormat.format(mDate);
                             showTime(dateStr, timeStr, week);
-                            break;
-                        case "voiceSwitch"://flag
-                            mVoiceSwitch = mObject.getString("flag");
-                            ToolSP.putDIYString(IConfigs.SP_VOICE_SWICH, mVoiceSwitch);
-
-                            break;
-
-                        case "timing"://定时开关机
                             break;
                         case "screen"://截屏请求
                             String sessionId = mObject.getString("sessionId");
@@ -307,68 +285,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             hardReboot(0);
 
                             break;
-                        case "upgrade"://更新apk
-                            if (ToolLog.showLog) {
-                                Toasty.info(mContext, "收到软件更新", Toast.LENGTH_LONG, true).show();
-                            }
-                            String link = mObject.getString("link");
-                            if (link.length() > 0)
-                                downloadApk(mHost + link);
 
-                            break;
-                       /* case "voice"://通知语音播报
-                            ToolLog.e(TAG, "userHandler: voice  VoiceFlag = " + mVoiceSwitch + "   " + msg.obj.toString());
-                            BVoice mVoiceBean = JSON.parseObject(mObject.get("data").toString(), BVoice.class);
-                            if ("1".equals(mVoiceSwitch)) {
-                                if (mVoiceBean != null && mVoiceBean.getPatientId().length() > 0) {
-                                    mapVoice.put(mVoiceBean.getPatientId(), mVoiceBean);
-                                }
-                                if (!isSpeeking) {
-                                    hasVoiceSpeak();
-                                }
-                            } else {
-                                mapVoice.clear();
-                            }
-
-                            break;
-*/
-                        case "register"://在线注册
-                            String mRegister_code = mObject.getString("register_code");
-                            boolean registered = ToolRegister.getInstance(mContext).registerDevice(mRegister_code);
-                            if (registered) {
-                                Toasty.success(mContext, "设备注册成功", Toast.LENGTH_SHORT, true).show();
-                                if (mDataHandler != null)
-                                    mDataHandler.postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ToolApp.restartApp(mContext);
-                                        }
-                                    }, 1000);
-                            }
-                            break;
-                        case "init": //socket连接成功之后 做初始化操作
-                            String clientId = mObject.getString("id");
-                            ToolSP.putDIYString(IConfigs.SP_CLIENT_ID, clientId);
-                            ToolLog.e(TAG, "handleMessage:  clientId : " + clientId);
-                            String ping = "{\"type\":\"ping\",\"id\":\"" + clientId + "\"}";
-                            mPulseData.setPing(ping);
-                            mSocketManager.getPulseManager().setPulseSendable(mPulseData);
-                            if (mTimeThread != null) {
-                                mTimeThread.onDestroy();
-                                mTimeThread = null;
-                            }
-                            addDevice(clientId);
-                            break;
-
-                        case "voiceFormat"://语音格式
-                            mVoiceSetting = JSON.parseObject(mObject.get("data").toString(), BVoiceSetting.class);
-                            if (mVoiceSetting != null) {
-                                ToolSP.putDIYString("voice", JSON.toJSONString(mVoiceSetting));
-                                initTts();
-                            }
-
-                            break;
-                        //添加设备
                     }
                 } catch (Exception e) {
                     showError(e.toString());
@@ -474,7 +391,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                                 return;
                             }
 
-                            if (speakTimes >= voiceCount) {//播放次数达标
+                            if (speakTimes == voiceCount) {//播放次数达标
                                 // 呼叫成功 通知后台改状态
                                 if (mapVoice != null && mapVoice.size() > 0 && mNext != null) {
 
@@ -752,7 +669,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             bytes = Arrays.copyOfRange(bytes, 8, bytes.length);
             String str = new String(bytes, Charset.forName("utf-8"));
             // JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject();
-            ToolLog.e(TAG, "发送心跳包：" + str);
+            ToolLog.e(TAG, "发送心跳包(Heartbeat Sending)" + str);
         }
     };
 

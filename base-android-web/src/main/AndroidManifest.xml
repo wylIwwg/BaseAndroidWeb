@@ -11,12 +11,13 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".base.BaseHospitalActivity"></activity>
+        <activity android:name=".base.BaseHospitalActivity" />
+        <activity android:name=".base.BasePhpActivity" />
         <activity
             android:name=".base.BaseActivity2"
             android:label="@string/title_activity_base_content"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".base.BaseActivityTopBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".base.BaseActivityTopBar" />
         <activity
             android:name=".crash.activity.ErrorActivity"
             android:process=":error_activity" />
@@ -27,7 +28,7 @@
             android:exported="false"
             android:initOrder="101" />
 
-        <activity android:name=".base.BaseActivity"></activity>
+        <activity android:name=".base.BaseActivity" />
     </application>
 
 </manifest>

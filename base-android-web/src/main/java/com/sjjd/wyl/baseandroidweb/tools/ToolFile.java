@@ -111,7 +111,7 @@ public class ToolFile {
      * @return
      */
     public static String readString(String path) {
-        String str = null;
+        String str = "";
         InputStreamReader isr = null;
         BufferedReader br = null;
         try {

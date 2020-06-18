@@ -8,6 +8,8 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -34,13 +36,14 @@ public class ANRException extends RuntimeException {
                 String name = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss").format(new Date(System.currentTimeMillis())) + ".txt";
                 File anr = new File(dir, name);
                 try {
-                    FileOutputStream fos = new FileOutputStream(anr);
+                    OutputStreamWriter write = null;
+                    write = new OutputStreamWriter(new FileOutputStream(anr), Charset.defaultCharset());
                     for (StackTraceElement trace : stackTrace) {
-                        byte[] b = (trace.toString() + "\n").getBytes();
-                        fos.write(b);
+                        write.write(trace.toString() + "\n");
                     }
-                    fos.flush();
-                    fos.close();
+                    write.flush();
+                    write.close();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
