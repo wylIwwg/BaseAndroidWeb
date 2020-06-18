@@ -406,12 +406,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
     public void hardReboot(final int l) {
         release();
-        mDataHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ToolApp.restartApp(mContext);
-            }
-        }, 2000);
+        ToolApp.restartApp(mContext);
 
     }
 
@@ -733,7 +728,11 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             Message msg = Message.obtain();
             msg.what = IConfigs.MSG_SOCKET_RECEIVED;
             msg.obj = str;
-            mDataHandler.sendMessage(msg);
+            if (mDataHandler != null) {
+                mDataHandler.sendMessage(msg);
+            } else {
+                showError("handler 为空");
+            }
 
         }
 
