@@ -185,14 +185,23 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mBaseLlRoot.addView(view, lp);
     }
 
+
     @Override
-    public void showError(final BResult result) {
+    public void showSuccess(String success) {
+
+    }
+
+    @Override
+    public void showMessage(final BResult result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
         LogUtils.file(ERROR, JSON.toJSONString(result));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+                if ("200".equals(result.getState()))
+                    Toasty.success(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+                else
+                    Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
             }
         });
     }
@@ -276,8 +285,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
                             break;
 
-                        case "timing"://定时开关机
-                            break;
                         case "screen"://截屏请求
                             String sessionId = mObject.getString("sessionId");
                             uploadScreen(URL_UPLOAD_SCREEN, sessionId);
@@ -373,6 +380,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 } catch (Exception e) {
                     showError(e.toString());
                 }
+                break;
         }
 
     }
@@ -393,10 +401,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             mTimeThread = null;
 
         }
-        if (mDataHandler != null) {
+      /*  if (mDataHandler != null) {
             mDataHandler.removeCallbacksAndMessages(null);
             mDataHandler = null;
-        }
+        }*/
         if (mSocketManager != null) {
             mSocketManager.disconnect();
             mSocketManager = null;

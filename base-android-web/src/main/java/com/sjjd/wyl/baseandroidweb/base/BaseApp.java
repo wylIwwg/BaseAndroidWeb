@@ -59,7 +59,7 @@ public class BaseApp extends Application {
 
         ToolSP.init(mContext, getPackageName());
 
-        Utils.init(mContext);
+        Utils.init(this);
 
         LogUtils.getConfig().setDir(IConfigs.PATH_LOG).setFilePrefix("log");
 

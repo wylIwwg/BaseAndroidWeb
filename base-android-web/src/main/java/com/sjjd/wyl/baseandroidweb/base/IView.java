@@ -7,7 +7,9 @@ import com.sjjd.wyl.baseandroidweb.bean.BResult;
  */
 public interface IView {
 
-    void showError(BResult result);
+    void showSuccess(String success);
+
+    void showMessage(BResult result);
 
     void showError(String error);
 
@@ -35,6 +37,6 @@ public interface IView {
 
     void release();
 
-    void  initData();
+    void initData();
 
 }

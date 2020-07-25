@@ -16,6 +16,7 @@ public interface IConfigs {
     String PATH_TTS = PATH_ROOT + "tts";
     String PATH_LOG = PATH_ROOT + "log";
     String PATH_MAC = PATH_ROOT + "mac";
+    String PATH_CAPTURE = PATH_ROOT + "capture";//截图保存
 
     /**
      * 网络请求相关
@@ -93,5 +94,12 @@ public interface IConfigs {
     int DEVICE_REGISTERED = 1;//已注册
     int DEVICE_OUTTIME = 2;//已过期
 
+
+    String METHOD_BIND = "Bind.machineRegister";
+    String METHOD_ADD_DEVICE = "Bind.machineRegister";
+    String METHOD_GET_AREA = "Bind.collocation";
+    String METHOD_UPLOAD_LOG = "Other.machineLogFile";
+    String METHOD_UPLOAD_CAPTURE = "Other.uploadCapture";
+    String METHOD_VOICE_FINISH = "Call.finishVoice";
 
 }

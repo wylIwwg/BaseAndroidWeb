@@ -4,14 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import com.alibaba.fastjson.JSONObject;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.FileCallback;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
+import com.sjjd.wyl.baseandroidweb.bean.Result;
 import com.sjjd.wyl.baseandroidweb.listeners.RegisterListener;
+import com.sjjd.wyl.baseandroidweb.thread.JsonCallBack;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
+import com.sjjd.wyl.baseandroidweb.tools.ToolCommon;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolFile;
 import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
@@ -19,6 +23,8 @@ import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -78,32 +84,83 @@ public class Presenter {
         }
     }
 
+    boolean isCapturing = false;
+
+    public void uploadCapture(final String url, final String base64, final String sessionId, File file) {
+        if (isCapturing) return;
+        isCapturing = true;
+        JSONObject content = new JSONObject();
+        content.put("beaseStr", base64);
+        content.put("sessionId", "123");
+        content.put("macId", ToolDevice.getMac());
+        OkGo.<Result>post(url)
+                .params("content", content.toJSONString())
+                .params("checkinfo", "{\"timestamp\":\"123\",\"token\":\"123\"}")
+                .params("method", IConfigs.METHOD_UPLOAD_CAPTURE)
+                .params("file", file)
+                .tag(this)
+                .execute(new JsonCallBack<Result>(Result.class) {
+                    @Override
+                    public void onSuccess(Response<Result> response) {
+                        isCapturing = false;
+                    }
+
+                    @Override
+                    public void onError(Response<Result> response) {
+                        super.onError(response);
+                        isCapturing = false;
+                    }
+                });
+
+    }
+
+    private boolean isLoging = false;
+    private List<File> fileList = new ArrayList<>();
+
     /**
      * 上传日志
      *
      * @param url
      */
     public void uploadLogs(String url) {
+        if (isLoging) return;
+        isLoging = true;
+        JSONObject content = new JSONObject();
+        content.put("beaseStr", "");
+        content.put("sessionId", "123");
+        content.put("mac", ToolDevice.getMac());
         File dir = new File(IConfigs.PATH_LOG);
-        if (dir.isDirectory()) {
-            File[] mFiles = dir.listFiles();
-            if (mFiles != null) {
-                for (final File f : mFiles) {
-                    OkGo.<String>post(url)
-                            .tag(this)
-                            .params("macId", ToolDevice.getMac())
-                            .params("file", f)
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onSuccess(Response<String> response) {
-                                    ToolFile.deleteFile(f);
-                                }
 
-                                @Override
-                                public void onError(Response<String> response) {
-                                }
-                            });
+        fileList.clear();
+        if (dir.isDirectory()) {
+            dir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    fileList.add(pathname);
+                    return false;
                 }
+            });
+            if (fileList.size() > 0) {
+                OkGo.<Result>post(url)
+                        .params("content", content.toJSONString())
+                        .params("checkinfo", "{\"timestamp\":\"123\",\"token\":\"123\"}")
+                        .params("method", IConfigs.METHOD_UPLOAD_LOG)
+                        // .params("file", files[0])//单个文件
+                        .addFileParams("file[]", fileList)//文件集合
+
+                        .tag(this)
+                        .execute(new JsonCallBack<Result>(Result.class) {
+                            @Override
+                            public void onSuccess(Response<Result> response) {
+                                isLoging = false;
+                            }
+
+                            @Override
+                            public void onError(Response<Result> response) {
+                                super.onError(response);
+                                isLoging = false;
+                            }
+                        });
             }
         }
 

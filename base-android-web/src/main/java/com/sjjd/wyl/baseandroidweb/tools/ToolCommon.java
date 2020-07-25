@@ -5,7 +5,10 @@ import android.graphics.Matrix;
 import android.util.Base64;
 import android.view.View;
 
+import com.blankj.utilcode.util.ImageUtils;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -64,6 +67,25 @@ public class ToolCommon {
         }
         return result;
     }
+
+    public static File getBitmapFile(View view) {
+
+        view.setDrawingCacheEnabled(true);
+
+        view.buildDrawingCache();
+
+        Bitmap bitmap = view.getDrawingCache();
+        File file = new File(IConfigs.PATH_CAPTURE + "/capture.jpg");
+        if (bitmap != null) {
+            Bitmap copy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+            ImageUtils.save(copy, file, Bitmap.CompressFormat.JPEG);
+        }
+        view.setDrawingCacheEnabled(false);
+
+        return file;
+
+    }
+
 
     private static Bitmap ScaleBitmap(Bitmap bitmap, float x, float y) {
         Matrix matrix = new Matrix();

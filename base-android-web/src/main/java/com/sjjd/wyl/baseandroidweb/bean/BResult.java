@@ -4,9 +4,9 @@ package com.sjjd.wyl.baseandroidweb.bean;
  * Created by wyl on 2020/5/12.
  */
 public class BResult {
-    String state;
-    String msg;
-    String type;
+    private String state;
+    private String msg;
+    private String type;
 
     public String getState() {
         return state == null ? "" : state;

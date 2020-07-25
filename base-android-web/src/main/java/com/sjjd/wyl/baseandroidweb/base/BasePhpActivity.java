@@ -46,6 +46,7 @@ import com.xuhao.didi.socket.client.sdk.client.OkSocketOptions;
 import com.xuhao.didi.socket.client.sdk.client.action.SocketActionAdapter;
 import com.xuhao.didi.socket.client.sdk.client.connection.IConnectionManager;
 
+import java.io.File;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -174,13 +175,23 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
         mBaseLlRoot.addView(view, lp);
     }
 
+
     @Override
-    public void showError(final BResult result) {
+    public void showSuccess(String success) {
+
+    }
+
+    @Override
+    public void showMessage(final BResult result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
+        LogUtils.file(ERROR, JSON.toJSONString(result));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+                if ("200".equals(result.getState()))
+                    Toasty.success(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+                else
+                    Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
             }
         });
     }
@@ -204,7 +215,8 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     @Override
     public void uploadScreen(String url, String sessionId) {
         String res = ToolCommon.getBitmapString(mBaseLlRoot);
-        mPresenter.uploadScreen(url, res, sessionId);
+        File mFile = ToolCommon.getBitmapFile(mBaseLlRoot);
+        mPresenter.uploadCapture(url, res, sessionId, mFile);
     }
 
 
@@ -647,10 +659,12 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
             //  JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject();
             // String type = jsonObject.get("type").getAsString();
             //处理socket消息
-            Message msg = Message.obtain();
-            msg.what = IConfigs.MSG_SOCKET_RECEIVED;
-            msg.obj = str;
-            mDataHandler.sendMessage(msg);
+            if (mDataHandler != null) {
+                Message msg = Message.obtain();
+                msg.what = IConfigs.MSG_SOCKET_RECEIVED;
+                msg.obj = str;
+                mDataHandler.sendMessage(msg);
+            }
 
         }
 
