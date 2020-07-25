@@ -180,12 +180,21 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
     }
 
     @Override
-    public void showError(final BResult result) {
+    public void showSuccess(String success) {
+
+    }
+
+    @Override
+    public void showMessage(final BResult result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
+        LogUtils.file(ERROR, JSON.toJSONString(result));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+                if ("200".equals(result.getState()))
+                    Toasty.success(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
+                else
+                    Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
             }
         });
     }
@@ -193,6 +202,7 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
     @Override
     public void showError(final String error) {
         ToolLog.e(ERROR, error);
+        LogUtils.file(ERROR, error);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

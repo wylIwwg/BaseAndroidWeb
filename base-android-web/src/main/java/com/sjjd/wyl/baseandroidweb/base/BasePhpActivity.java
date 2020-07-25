@@ -199,6 +199,7 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     @Override
     public void showError(final String error) {
         ToolLog.e(ERROR, error);
+        LogUtils.file(ERROR, error);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -290,6 +291,20 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                                         }
                                     }
                                 }
+                            }
+                            break;
+                        case "upgrade":
+
+                            if (ToolLog.showLog) {
+                                showError("收到软件更新！");
+                            }
+                            int cloudVersionCode = mObject.getIntValue("version");
+                            String mApply = mObject.getString("apply");
+                            ToolLog.e(TAG, "handleMessage: " + cloudVersionCode + "  " + mApply + "  " + mObject.getInteger("version"));
+                            if (cloudVersionCode > ToolApp.getAppVersionCode(mContext, getPackageName()) && mApply.length() > 0
+                                    && mApply.toLowerCase().endsWith("apk")) {
+
+                                mPresenter.downloadApk(mApply);
                             }
                             break;
                         case "restart":
