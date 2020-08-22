@@ -3,6 +3,9 @@ package com.sjjd.wyl.baseandroidweb.tools;
 import android.content.Context;
 import android.os.Environment;
 
+import com.blankj.utilcode.util.FileIOUtils;
+import com.blankj.utilcode.util.FileUtils;
+import com.blankj.utilcode.util.LogUtils;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.unisound.client.SpeechConstants;
 import com.unisound.client.SpeechSynthesizer;
@@ -40,7 +43,7 @@ public class ToolTts {
         return mTTSPlayer;
     }
 
-    public String defaultDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sjjd/tts/";
+    public String defaultDir = IConfigs.PATH_TTS;
 
     String frontName = "frontend_model";
     String backName = "backend_female";
@@ -53,20 +56,25 @@ public class ToolTts {
     }
 
 
-
-
     public void copyFile() {
 
         new Thread(new Runnable() {
             @Override
             public void run() {
+                ToolLog.e(TAG, "run: 复制语音文件：");
                 File dir = new File(defaultDir);
-                if (!dir.exists()) {
+                if (!dir.exists())
                     dir.mkdirs();
+
+                {
+                    LogUtils.file("复制语音文件:");
+                    File mFileFont = new File(defaultDir + frontName);
+                    File mFileBack = new File(defaultDir + backName);
                     try {
                         InputStream front = mContext.getAssets().open(frontName);
                         byte[] frontmBytes = new byte[1024];
-                        FileOutputStream frontmBytesfos = new FileOutputStream(new File(defaultDir + frontName));
+                        mFileFont.delete();
+                        FileOutputStream frontmBytesfos = new FileOutputStream(mFileFont);
                         while ((front.read(frontmBytes, 0, frontmBytes.length)) != -1) {
                             frontmBytesfos.write(frontmBytes);
                         }
@@ -78,7 +86,8 @@ public class ToolTts {
                     try {
                         InputStream front = mContext.getAssets().open(backName);
                         byte[] frontmBytes = new byte[1024];
-                        FileOutputStream frontmBytesfos = new FileOutputStream(new File(defaultDir + backName));
+                        mFileBack.delete();
+                        FileOutputStream frontmBytesfos = new FileOutputStream(mFileBack);
                         while ((front.read(frontmBytes, 0, frontmBytes.length)) != -1) {
                             frontmBytesfos.write(frontmBytes);
                         }
@@ -88,14 +97,13 @@ public class ToolTts {
                         e.printStackTrace();
                     }
                     File mFile = new File(defaultDir + "tts.txt");
-                    try {
-                        mFile.createNewFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+                    FileIOUtils.writeFileFromString(mFile, backName + ":" + FileUtils.getSize(mFileBack) + "\n" + frontName + ":" + FileUtils.getSize(mFileFont));
                 }
             }
-        }).start();
+        }).
+
+                start();
 
 
     }
@@ -120,6 +128,7 @@ public class ToolTts {
         File front = new File(defaultDir + frontName);
 
         File txt = new File(defaultDir + "tts.txt");
+
         if (back.isFile() && back.exists() && front.isFile() && front.exists() && txt.exists()) {
             return true;
         }

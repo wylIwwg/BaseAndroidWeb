@@ -13,10 +13,12 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.LogUtils;
+import com.lztek.toolkit.Lztek;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.sjjd.wyl.baseandroidweb.R;
+import com.sjjd.wyl.baseandroidweb.bean.BPower;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult;
@@ -24,6 +26,7 @@ import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
 import com.sjjd.wyl.baseandroidweb.listeners.RegisterListener;
+import com.sjjd.wyl.baseandroidweb.thread.RestartThread;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
@@ -89,6 +92,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public SimpleDateFormat mWeekFormat;
     public TimeThread mTimeThread;
 
+    public RestartThread mRestartThread;
+    public String mRebootStarTime = "";
+    public String mRebootEndTime = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +137,29 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mTimeThread.sleep_time = 1000 * 3;
         mTimeThread.start();
     }
+
+
+    /**
+     * 开启开关机线程
+     */
+    public void startRebootThread() {
+        mRestartThread = new RestartThread(mContext, mDataHandler);
+        mRestartThread.sleep_time = 10 * 1000;
+        //重启设备线程 固定时间
+        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
+        if (power.length() > 0) {
+            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
+            if (pbd != null) {
+                mRebootStarTime = pbd.getStarTime();
+                mRebootEndTime = pbd.getEndTime();
+                if (mRebootEndTime.length() > 0) {//关机时间
+                    mRestartThread.setRebootTime(mRebootEndTime);
+                }
+            }
+        }
+        mRestartThread.start();
+    }
+
 
     public void hasPermission() {
         mPresenter.checkPermission(mPermissions);
@@ -235,6 +265,25 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     @Override
     public void userHandler(Message msg) {
         switch (msg.what) {
+            case IConfigs.MSG_REBOOT_LISTENER://设备关机 重启
+                int mins;
+                if (mRebootStarTime.length() > 0) {
+                    String[] ends = mRebootEndTime.split(":");
+                    String[] starts = mRebootStarTime.split(":");
+                    int endhour = Integer.parseInt(ends[0]);
+                    int endmin = Integer.parseInt(ends[1]);
+                    int starthour = Integer.parseInt(starts[0]);
+                    int startmin = Integer.parseInt(starts[1]);
+                    if (starthour >= endhour) {//当天
+                        mins = (starthour * 60 + startmin) - (endhour * 60 + endmin);
+                    } else {
+                        mins = ((endhour + 23) * 60 + endmin) - (starthour * 60 + startmin);
+                    }
+                } else {
+                    mins = 30;
+                }
+                Toasty.info(mContext, "设备即将关机，将在" + mins + "分钟后重启", Toast.LENGTH_LONG).show();
+                hardReboot(60 * mins);
             case IConfigs.NET_TIME_CHANGED:
                 HashMap<String, String> times = (HashMap<String, String>) msg.obj;
                 if (times != null) {
@@ -249,13 +298,30 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 }
                 break;
             case IConfigs.MSG_SOCKET_RECEIVED:
-                String obj = msg.obj.toString();
-                LogUtils.file(SOCKET, obj);
-                ToolLog.e(TAG, "handleMessage: socket  " + obj);
                 try {
+                    String obj = msg.obj.toString();
                     JSONObject mObject = JSONObject.parseObject(obj);
                     String mType = mObject.getString("type");
+                    //不打印心跳日志
+                    if (!"pong".equals(mType)) {
+                        LogUtils.file(SOCKET, obj);
+                    }
+                    ToolLog.e(TAG, "handleMessage: socket  " + obj);
                     switch (mType) {
+                        case "timing"://定时开关机
+                            BPower mPowerBean = JSON.parseObject(obj, BPower.class);
+                            if (mPowerBean != null) {
+                                BPower.Data pbd = mPowerBean.getData();
+                                if (pbd != null) {
+                                    mRebootStarTime = pbd.getStarTime();
+                                    mRebootEndTime = pbd.getEndTime();
+                                    if (mRebootEndTime.length() > 0 && mRestartThread != null) {//关机时间
+                                        mRestartThread.setRebootTime(mRebootEndTime);
+                                    }
+                                    ToolSP.putDIYString(IConfigs.SP_POWER, JSON.toJSONString(pbd));
+                                }
+                            }
+                            break;
                         case "pong"://心跳处理
                             Date mDate;
                             feed();
@@ -277,6 +343,9 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             String dateStr = mDateFormat.format(mDate);
                             //星期
                             String week = mWeekFormat.format(mDate);
+                            if (mRestartThread != null) {
+                                mRestartThread.setNetTime(timeStr);
+                            }
                             showTime(dateStr, timeStr, week);
                             break;
                         case "voiceSwitch"://flag
@@ -294,17 +363,15 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             BVolume.Data vdata = volume.getData();
                             if (vdata != null) {
                                 String vsize = vdata.getSize();
+                                vsize = vsize.replace("%", "");
                                 if (vsize.length() > 0) {
                                     AudioManager mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
                                     if (mAudioManager != null) {
-                                        int max = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                                        int value = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                                        vsize = vsize.replace("%", "");
-                                        int index = max * Integer.parseInt(vsize) / 100;
-                                        if (index != 0) {
-                                            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0); //音量
-                                            ToolLog.e(TAG, "userHandler: " + index + "  " + max + "  " + value + "  " + mAudioManager.getStreamVolume(AudioManager.STREAM_SYSTEM));
-                                        }
+                                        int max = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);//最大值
+                                        int value = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);//设置前
+                                        int index = max * Integer.parseInt(vsize) / 100;//需要设置的值
+                                        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0); //音量
+                                        LogUtils.file("【音量设置 】 " + vsize + " ，设置前：" + value + "， 设置后：" + mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
                                     }
                                 }
                             }
@@ -414,7 +481,18 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
     public void hardReboot(final int l) {
         release();
-        ToolApp.restartApp(mContext);
+        mDataHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Lztek mLztek = Lztek.create(mContext);
+                if (l > 0) {
+                    mLztek.alarmPoweron(l);//定时开机
+                } else {
+                    mLztek.hardReboot();//重启
+                }
+                finish();
+            }
+        }, 2000);
 
     }
 
@@ -431,6 +509,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
     public void close() {
         this.finish();
+
     }
 
     @Override
@@ -625,10 +704,13 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
 
+
     public IConnectionManager mSocketManager;
 
     public void feed() {
-        mSocketManager.getPulseManager().feed();
+        if (mSocketManager != null && mSocketManager.getPulseManager() != null) {
+            mSocketManager.getPulseManager().feed();
+        }
     }
 
     public void initSocket() {

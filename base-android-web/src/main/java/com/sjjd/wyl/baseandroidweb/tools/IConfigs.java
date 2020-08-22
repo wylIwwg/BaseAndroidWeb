@@ -12,11 +12,12 @@ public interface IConfigs {
     public static final String secret = "bbe919b0d4234c4b0f13ebfeb4e7173f";
 
     String PATH_ROOT = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sjjd/";
-    String PATH_APK = PATH_ROOT + "apk";
-    String PATH_TTS = PATH_ROOT + "tts";
-    String PATH_LOG = PATH_ROOT + "log";
-    String PATH_MAC = PATH_ROOT + "mac";
-    String PATH_CAPTURE = PATH_ROOT + "capture";//截图保存
+    String PATH_APK = PATH_ROOT + "apk/";
+    String PATH_TTS = PATH_ROOT + "tts/";
+    String PATH_LOG = PATH_ROOT + "log/";
+    String PATH_MAC = PATH_ROOT + "mac/";
+    String PATH_CAPTURE = PATH_ROOT + "capture/";//截图保存
+    String PATH_VIDEO = PATH_ROOT + "video/";//截图保存
 
     /**
      * 网络请求相关
@@ -45,6 +46,8 @@ public interface IConfigs {
     int MSG_CREATE_TCP_ERROR = 2001;//tcp创建失败
     int MSG_PING_TCP_TIMEOUT = 2002;//tcp连接超时
 
+    int MSG_REBOOT_LISTENER = 2003;//设备关机重启
+
     ///设备注册
     int REGISTER_FORBIDDEN = 0;//禁止注册
     int REGISTER_FOREVER = -1;//永久注册
@@ -56,6 +59,8 @@ public interface IConfigs {
     String SP_IP = "ip";
     String SP_PORT_HTTP = "port_http";
     String SP_PORT_SOCKET = "port_socket";//
+
+    String SP_POWER = "power";//开关机
 
     /*区域*/
     String SP_WINDOW_NUM = "win_num";//窗口号

@@ -86,23 +86,32 @@ public class BaseApp extends Application {
      * @param dir 目标文件存放路径
      */
     public void initTTs(final String dir) {
-        AndPermission.with(this)
-                .runtime().permission(Permission.Group
-                .STORAGE).permission(Permission.READ_PHONE_STATE).onGranted(
-                new Action<List<String>>() {
-                    @Override
-                    public void onAction(List<String> data) {
-                        if (!ToolTts.getInstance(mContext).existsTTsFile(dir)) {
-                            ToolTts.getInstance(mContext).copyFile();
-                        }
-                    }
-                }
-        ).onDenied(new Action<List<String>>() {
-            @Override
-            public void onAction(List<String> data) {
-                Toasty.error(mContext, "权限拒绝，将无法播放语音", Toast.LENGTH_LONG, true).show();
+        if (AndPermission.hasPermissions(mContext, Permission.Group.STORAGE)) {
+            if (!ToolTts.getInstance(mContext).existsTTsFile(dir)) {
+                ToolTts.getInstance(mContext).copyFile();
             }
-        }).start();
+        } else {
+            AndPermission.with(mContext)
+                    .runtime()
+                    .permission(Permission.Group.STORAGE)
+                    .permission(Permission.READ_PHONE_STATE)
+                    .onGranted(new Action<List<String>>() {
+                                   @Override
+                                   public void onAction(List<String> data) {
+                                       if (!ToolTts.getInstance(mContext).existsTTsFile(dir)) {
+                                           ToolTts.getInstance(mContext).copyFile();
+                                       }
+                                   }
+                               }
+                    ).onDenied(new Action<List<String>>() {
+
+                @Override
+                public void onAction(List<String> data) {
+                    Toasty.error(mContext, "权限拒绝，将无法播放语音", Toast.LENGTH_LONG, true).show();
+                }
+            }).start();
+        }
+
     }
 
 

@@ -57,4 +57,5 @@ dependencies {
     }
     implementation 'com.tonystark.android:socket:4.2.3'
     implementation files('libs/usc.jar')
+    implementation files('libs/sdkapi.jar')
 }
