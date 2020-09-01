@@ -524,11 +524,12 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         }
     }
 
-    public Lztek mLztek = Lztek.create(mContext);
 
     public void setSystemTime(long time) {
-
+        Lztek mLztek = Lztek.create(mContext);
         mLztek.setSystemTime(time);
+        //setSystemTime(long milliseconds1970)
+        //<uses-permission android:name="android.permission.SET_TIME" />。
     }
 
 
@@ -540,7 +541,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mDataHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                //Lztek mLztek = Lztek.create(mContext);
+                Lztek mLztek = Lztek.create(mContext);
                 if (seconds > 0) {
                     mLztek.alarmPoweron(seconds);//定时开机
                 } else {
