@@ -131,12 +131,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             }
         });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mPermissions = new String[]{Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE};
-            hasPermission();
-        } else {
-            initData();
-        }
 
     }
 
@@ -177,7 +171,13 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
 
     public void hasPermission() {
-        mPresenter.checkPermission(mPermissions);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPresenter.checkPermission(mPermissions);
+        } else {
+            initData();
+        }
+
     }
 
     @Override
