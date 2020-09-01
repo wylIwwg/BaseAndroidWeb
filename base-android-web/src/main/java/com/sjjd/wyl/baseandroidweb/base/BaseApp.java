@@ -5,8 +5,12 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONObject;
+import com.blankj.utilcode.util.FileIOUtils;
+import com.blankj.utilcode.util.FileUtils;
 import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.Utils;
 import com.lzy.okgo.OkGo;
@@ -20,12 +24,15 @@ import com.sjjd.wyl.baseandroidweb.appTopService.AppTopService;
 import com.sjjd.wyl.baseandroidweb.crash.config.CrashConfig;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
+import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.runtime.Permission;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -64,6 +71,30 @@ public class BaseApp extends Application {
         LogUtils.getConfig().setDir(IConfigs.PATH_LOG).setFilePrefix("log");
 
 
+    }
+
+    /**
+     * 删除指定时间内的文件  保留
+     *
+     * @param days
+     */
+    public void deleteFiles(final int days) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FileUtils.listFilesInDirWithFilter(IConfigs.PATH_LOG, new FileFilter() {
+                    @Override
+                    public boolean accept(File mFile) {
+                        long mLastModified = mFile.lastModified();
+                        long date = 1000 * 60 * 60 * 24 * days;
+                        if (System.currentTimeMillis() - mLastModified > date) {
+                            FileUtils.delete(mFile);
+                        }
+                        return false;
+                    }
+                });
+            }
+        }).start();
     }
 
     public void initTopService() {
@@ -168,7 +199,27 @@ public class BaseApp extends Application {
     }
 
 
+    /**
+     * 用于程序崩溃重启
+     */
+    public boolean restart = true;
+
+    public void setRestart(boolean restart) {
+        this.restart = restart;
+    }
+
     public void initCrashRestart() {
+        Thread.setDefaultUncaughtExceptionHandler(restartHandler); // 程序崩溃时触发线程
+
+    }
+
+    /**
+     * 添加崩溃重启选择
+     *
+     * @param restart
+     */
+    public void initCrashRestart(boolean restart) {
+        setRestart(restart);
         Thread.setDefaultUncaughtExceptionHandler(restartHandler); // 程序崩溃时触发线程
 
     }
@@ -187,18 +238,31 @@ public class BaseApp extends Application {
 
 
     //保存错误日志
-    private void handleException(Throwable ex) {
+    public void handleException(Throwable ex) {
         String s = formatCrashInfo(ex);
         LogUtils.file(TAG, s);
-        ToolApp.restartApp(mContext);
+        if (restart) {
+            String message = ex.getMessage();
+            //如果大于10
+            int count = ToolSP.getDIYInt(message);
+            count += 1;
+            ToolLog.e("【count】", message + "  " + count + "");
+            ToolSP.putDIYInt(message, count);
+            if (count > 5) {
+                //不再重启
+            } else {
+
+                ToolApp.restartApp(mContext);
+            }
+        }
+
     }
 
 
-    private String formatCrashInfo(Throwable ex) {
+    public String formatCrashInfo(Throwable ex) {
         String lineSeparator = "\r\n";
 
         StringBuilder sb = new StringBuilder();
-        String logTime = "logTime:" + getCurrentTime();
 
         Writer info = new StringWriter();
         PrintWriter printWriter = new PrintWriter(info);
@@ -208,19 +272,17 @@ public class BaseApp extends Application {
         String exception = "exception:" + "{\n" + dump + "\n}";
         printWriter.close();
 
+
         sb.append("----------------------------").append(lineSeparator);
-        sb.append(logTime).append(lineSeparator);
-        sb.append(getPackageName()).append(lineSeparator);
-        sb.append(ToolApp.getAppVersionCode(mContext, getPackageName())).append(lineSeparator);
         sb.append(exception).append(lineSeparator);
-        sb.append("----------------------------").append(lineSeparator).append(lineSeparator);
+        sb.append("----------------------------").append(lineSeparator);
 
         return sb.toString();
 
     }
 
 
-    public String getCurrentTime() {
+    private String getCurrentTime() {
         long currentTime = System.currentTimeMillis();
         Date date = new Date(currentTime);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());

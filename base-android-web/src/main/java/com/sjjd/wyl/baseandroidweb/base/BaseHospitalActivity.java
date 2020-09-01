@@ -2,9 +2,11 @@ package com.sjjd.wyl.baseandroidweb.base;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -49,6 +51,9 @@ import com.xuhao.didi.socket.client.sdk.client.ConnectionInfo;
 import com.xuhao.didi.socket.client.sdk.client.OkSocketOptions;
 import com.xuhao.didi.socket.client.sdk.client.action.SocketActionAdapter;
 import com.xuhao.didi.socket.client.sdk.client.connection.IConnectionManager;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.runtime.Permission;
 
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -57,6 +62,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -93,8 +99,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public TimeThread mTimeThread;
 
     public RestartThread mRestartThread;
-    public String mRebootStarTime = "";
-    public String mRebootEndTime = "";
+    public String mRebootStarTime = "";//开关机 开机时间
+    public String mRebootEndTime = "";//开关机 关机时间
+
+    public String mVoiceSwitch = "1";//语音播报开关
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +130,13 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 isRegistered = registerResult.isRegistered();
             }
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPermissions = new String[]{Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE};
+            hasPermission();
+        } else {
+            initData();
+        }
 
     }
 
@@ -194,7 +209,19 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         }
         mHost = String.format(IConfigs.HOST, mIP, mHttpPort);
 
+        String mVoice = ToolSP.getDIYString(IConfigs.SP_VOICE_TEMP);
+        if (mVoice != null && mVoice.length() > 0) {
+            mVoiceSetting = JSON.parseObject(mVoice, BVoiceSetting.class);
+        } else {
+            mVoiceSetting = new BVoiceSetting();
+            mVoiceSetting.setVoFormat(voiceFormat);
+            mVoiceSetting.setVoNumber("1");
+            mVoiceSetting.setVoSex(1 + "");
+            mVoiceSetting.setVoSpeed("3");
+        }
+
     }
+
 
     public void initData() {
         initListener();
@@ -262,6 +289,11 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
 
+    /**
+     * 包含 开关机；时间变化；声音大小，开关；截屏；重启；语音格式；连接；在线注册；升级；
+     *
+     * @param msg
+     */
     @Override
     public void userHandler(Message msg) {
         switch (msg.what) {
@@ -275,13 +307,14 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                     int starthour = Integer.parseInt(starts[0]);
                     int startmin = Integer.parseInt(starts[1]);
                     if (starthour >= endhour) {//当天
-                        mins = (starthour * 60 + startmin) - (endhour * 60 + endmin);
-                    } else {
-                        mins = ((endhour + 23) * 60 + endmin) - (starthour * 60 + startmin);
+                        mins = (starthour - endhour) * 60 + (startmin - endmin);
+                    } else {//
+                        mins = (starthour + 24 - endhour) * 60 + (startmin - endmin);
                     }
                 } else {
                     mins = 30;
                 }
+
                 Toasty.info(mContext, "设备即将关机，将在" + mins + "分钟后重启", Toast.LENGTH_LONG).show();
                 hardReboot(60 * mins);
             case IConfigs.NET_TIME_CHANGED:
@@ -356,6 +389,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
                         case "screen"://截屏请求
                             String sessionId = mObject.getString("sessionId");
+                            if (TextUtils.isEmpty(URL_UPLOAD_SCREEN)) {
+                                showError("截图链接无效！");
+                                return;
+                            }
                             uploadScreen(URL_UPLOAD_SCREEN, sessionId);
                             break;
                         case "voiceSize"://设置声音大小
@@ -380,6 +417,15 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             Toasty.info(mContext, "设备即将重启", Toast.LENGTH_LONG).show();
                             hardReboot(0);
 
+                            break;
+                        case "restartApp"://重启软件
+                            Toasty.info(mContext, "软件即将重启", Toast.LENGTH_LONG, true).show();
+                            mDataHandler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ToolApp.restartApp(mContext);
+                                }
+                            }, 2000);
                             break;
                         case "upgrade"://更新apk
                             if (ToolLog.showLog) {
@@ -437,7 +483,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                         case "voiceFormat"://语音格式
                             mVoiceSetting = JSON.parseObject(mObject.get("data").toString(), BVoiceSetting.class);
                             if (mVoiceSetting != null) {
-                                ToolSP.putDIYString("voice", JSON.toJSONString(mVoiceSetting));
+                                ToolSP.putDIYString(IConfigs.SP_VOICE_TEMP, JSON.toJSONString(mVoiceSetting));
                                 initTts();
                             }
 
@@ -478,15 +524,25 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         }
     }
 
+    public Lztek mLztek = Lztek.create(mContext);
 
-    public void hardReboot(final int l) {
+    public void setSystemTime(long time) {
+
+        mLztek.setSystemTime(time);
+    }
+
+
+    /**
+     * @param seconds 单位秒
+     */
+    public void hardReboot(final int seconds) {
         release();
         mDataHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Lztek mLztek = Lztek.create(mContext);
-                if (l > 0) {
-                    mLztek.alarmPoweron(l);//定时开机
+                //Lztek mLztek = Lztek.create(mContext);
+                if (seconds > 0) {
+                    mLztek.alarmPoweron(seconds);//定时开机
                 } else {
                     mLztek.hardReboot();//重启
                 }
@@ -513,9 +569,18 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
     @Override
+    public void onBackPressed() {
+        close();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         release();
+        if (mDataHandler != null) {
+            mDataHandler.removeCallbacksAndMessages(null);
+            mDataHandler = null;
+        }
     }
 
 
@@ -635,7 +700,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         }
     }
 
-    public String mVoiceSwitch = "1";//语音播报开关
 
     public synchronized void ttsSpeak() {
         if (mNext != null) {
@@ -704,7 +768,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
 
-
     public IConnectionManager mSocketManager;
 
     public void feed() {
@@ -714,6 +777,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
     public void initSocket() {
+        if (mIP.length() < 6) {
+            showError("请设置ip与端口号");
+            return;
+        }
         initSocket(mIP, mSocketPort);
     }
 
@@ -821,7 +888,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             if (mDataHandler != null) {
                 mDataHandler.sendMessage(msg);
             } else {
-                showError("handler 为空");
+                // showError("handler 为空");
             }
 
         }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
 
+import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.NetworkUtils;
 import com.lzy.okgo.OkGo;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
@@ -100,10 +101,13 @@ public class RestartThread extends Thread {
             timeStr = mTimeFormat.format(mDate);
             ToolLog.e(TAG, "initData: 本地时间" + timeStr);
         }
-        if (timeStr.equals(rebootTime))
+        if (timeStr.equals(rebootTime)) {
+            LogUtils.file("【关机时间到了】: " + rebootTime);
             if (mHandler != null) {
                 mHandler.sendEmptyMessage(IConfigs.MSG_REBOOT_LISTENER);
             }
+        }
+
     }
 
 

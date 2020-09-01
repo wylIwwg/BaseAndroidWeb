@@ -14,8 +14,9 @@ public interface IConfigs {
     String PATH_ROOT = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sjjd/";
     String PATH_APK = PATH_ROOT + "apk/";
     String PATH_TTS = PATH_ROOT + "tts/";
-    String PATH_LOG = PATH_ROOT + "log/";
+    String PATH_LOG = PATH_ROOT + "log/";//数据日志
     String PATH_MAC = PATH_ROOT + "mac/";
+    String PATH_ERROR = PATH_ROOT + "error/";//错误日志
     String PATH_CAPTURE = PATH_ROOT + "capture/";//截图保存
     String PATH_VIDEO = PATH_ROOT + "video/";//截图保存
 
@@ -59,6 +60,7 @@ public interface IConfigs {
     String SP_IP = "ip";
     String SP_PORT_HTTP = "port_http";
     String SP_PORT_SOCKET = "port_socket";//
+    String SP_VOICE_TEMP = "voice_temp";//
 
     String SP_POWER = "power";//开关机
 

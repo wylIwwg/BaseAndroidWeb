@@ -10,10 +10,10 @@ import android.media.SoundPool;
 import android.os.Build;
 
 import static android.content.Context.AUDIO_SERVICE;
-import static android.support.constraint.Constraints.TAG;
 
 public class SoundPoolManager {
 
+    private static final String TAG = "  SoundPoolManager  " ;
     private boolean playing = false;
     private boolean loaded = false;
     private float actualVolume;
