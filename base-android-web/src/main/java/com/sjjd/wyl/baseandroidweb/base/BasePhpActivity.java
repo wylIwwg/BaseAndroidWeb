@@ -239,8 +239,8 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                 break;
             case IConfigs.MSG_SOCKET_RECEIVED:
                 String obj = msg.obj.toString();
-                LogUtils.file(SOCKET, obj);
-
+                if (!obj.contains("pong"))//不再打印心跳
+                    LogUtils.file(SOCKET, obj);
                 ToolLog.e(TAG, "handleMessage: socket  " + obj);
                 try {
                     JSONObject mObject = JSONObject.parseObject(obj);
@@ -269,9 +269,12 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                             String week = mWeekFormat.format(mDate);
                             showTime(dateStr, timeStr, week);
                             break;
-                        case "screen"://截屏请求
-                            String sessionId = mObject.getString("sessionId");
-                            uploadScreen(URL_UPLOAD_SCREEN, sessionId);
+                        case "errorLog":
+                            mPresenter.uploadLogs(mHost);
+                            break;
+                        case "capture":
+                            File file = ToolCommon.getBitmapFile(mBaseLlRoot);
+                            mPresenter.uploadCapture(mHost, ToolCommon.getBitmapString(mBaseLlRoot), "", file);
                             break;
                         case "voiceSize"://设置声音大小
                             BVolume volume = JSON.parseObject(msg.obj.toString(), BVolume.class);
@@ -617,7 +620,6 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                 byte[] buffer = new byte[4];
                 System.arraycopy(header, 0, buffer, 0, 4);
                 int len = bytesToInt(buffer, 0);
-                ToolLog.e(TAG, "getBodyLength: " + (len - 8));
                 return len - 8;
             }
 
@@ -685,11 +687,10 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
 
         @Override
         public void onSocketWriteResponse(ConnectionInfo info, String action, ISendable data) {
-            byte[] bytes = data.parse();
+           /* byte[] bytes = data.parse();
             bytes = Arrays.copyOfRange(bytes, 4, bytes.length);
             String str = new String(bytes, Charset.forName("utf-8"));
-            ToolLog.e(TAG, "onSocketWriteResponse: " + action + "     " + str);
-
+*/
         }
 
         @Override

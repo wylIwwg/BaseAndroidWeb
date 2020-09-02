@@ -97,6 +97,30 @@ public class BaseApp extends Application {
         }).start();
     }
 
+    /**
+     * 删除指定时间内的文件  保留
+     *
+     * @param days
+     */
+    public void deleteFiles(final String path, final int days) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FileUtils.listFilesInDirWithFilter(path, new FileFilter() {
+                    @Override
+                    public boolean accept(File mFile) {
+                        long mLastModified = mFile.lastModified();
+                        long date = 1000 * 60 * 60 * 24 * days;
+                        if (System.currentTimeMillis() - mLastModified > date) {
+                            FileUtils.delete(mFile);
+                        }
+                        return false;
+                    }
+                });
+            }
+        }).start();
+    }
+
     public void initTopService() {
         registerActivityLifecycleCallbacks(new AppTopLifecycleHandler());
 

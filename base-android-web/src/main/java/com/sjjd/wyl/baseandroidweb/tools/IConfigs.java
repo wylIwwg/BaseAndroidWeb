@@ -19,6 +19,7 @@ public interface IConfigs {
     String PATH_ERROR = PATH_ROOT + "error/";//错误日志
     String PATH_CAPTURE = PATH_ROOT + "capture/";//截图保存
     String PATH_VIDEO = PATH_ROOT + "video/";//截图保存
+    String PATH_PROGRAM = PATH_ROOT + "program/";//项目节目
 
     /**
      * 网络请求相关
@@ -76,6 +77,7 @@ public interface IConfigs {
     String SP_AREA = "area";
 
     String SP_VOICE_SWICH = "flag";
+    String SP_VOICE_FORMAT = "voice_format";
 
     String SP_DEPART_NAME = "depart_n";//科室名
     String SP_DEPART_ID = "depart_id";//科室id
@@ -105,8 +107,8 @@ public interface IConfigs {
     String METHOD_BIND = "Bind.machineRegister";
     String METHOD_ADD_DEVICE = "Bind.machineRegister";
     String METHOD_GET_AREA = "Bind.collocation";
-    String METHOD_UPLOAD_LOG = "Other.machineLogFile";
-    String METHOD_UPLOAD_CAPTURE = "Other.uploadCapture";
+    String METHOD_UPLOAD_LOG = "Other.machineLogFile";//上传日志
+    String METHOD_UPLOAD_CAPTURE = "Other.uploadCapture";//上传截图
     String METHOD_VOICE_FINISH = "Call.finishVoice";
 
 }

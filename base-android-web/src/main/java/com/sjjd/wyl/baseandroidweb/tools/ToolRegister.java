@@ -187,6 +187,7 @@ public class ToolRegister {
         BRegisterResult mResult = new BRegisterResult();
         mResult.setRegisterCode(1);
         mResult.setRegistered(false);
+        mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
@@ -195,7 +196,7 @@ public class ToolRegister {
                     Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
                     mResult.setRegisterCode(1);
                     mResult.setRegistered(false);
-                    mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+
                     return mResult;
                 }
                 //检测mac是否一致
@@ -218,7 +219,6 @@ public class ToolRegister {
                                 mResult.setRegisterCode(3);
                                 mResult.setRegistered(false);
                                 ToolRegister mInstance = getInstance(mContext);
-                                mResult.setRegisterStr(mInstance.register2Base64(false, ToolSP.getDIYString("app_type")));
                             }
                         }
 
@@ -249,6 +249,7 @@ public class ToolRegister {
         BRegisterResult mResult = new BRegisterResult();
         mResult.setRegistered(false);
         mResult.setRegisterCode(0);
+        mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
@@ -257,7 +258,7 @@ public class ToolRegister {
                     Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
                     mResult.setRegisterCode(0);
                     mResult.setRegistered(false);
-                    mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+
                     return mResult;
                 }
 
@@ -279,7 +280,7 @@ public class ToolRegister {
                             if (newDate2.getTime() < mMillis) {
                                 mResult.setRegisterCode(2);
                                 mResult.setRegistered(false);
-                                mResult.setRegisterStr(register2Base64(false, ToolSP.getDIYString("app_type")));
+
                             }
                         }
 
@@ -309,6 +310,7 @@ public class ToolRegister {
         BRegisterResult mResult = new BRegisterResult();
         mResult.setRegisterCode(0);
         mResult.setRegistered(false);
+        mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
         try {
             this.mRegister = this.getRegisterText();
             if (this.mRegister != null) {
@@ -318,7 +320,7 @@ public class ToolRegister {
                     //  Toasty.error(mContext, "MAC获取不正确：" + mac, 1, true).show();
                     mResult.setRegisterCode(0);
                     mResult.setRegistered(false);
-                    mResult.setRegisterStr(this.register2Base64(false, ToolSP.getDIYString("app_type")));
+
                     return mResult;
                 }
 

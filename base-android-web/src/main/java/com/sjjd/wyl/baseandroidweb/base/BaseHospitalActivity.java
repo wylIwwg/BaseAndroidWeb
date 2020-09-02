@@ -826,7 +826,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 byte[] buffer = new byte[4];
                 System.arraycopy(header, 0, buffer, 0, 4);
                 int len = bytesToInt(buffer, 0);
-                ToolLog.e(TAG, "getBodyLength: " + (len - 8));
+               // ToolLog.e(TAG, "getBodyLength: " + (len - 8));
                 return len - 8;
             }
 
@@ -896,10 +896,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 
         @Override
         public void onSocketWriteResponse(ConnectionInfo info, String action, ISendable data) {
-            byte[] bytes = data.parse();
+        /*    byte[] bytes = data.parse();
             bytes = Arrays.copyOfRange(bytes, 4, bytes.length);
             String str = new String(bytes, Charset.forName("utf-8"));
-            ToolLog.e(TAG, "onSocketWriteResponse: " + action + "     " + str);
+            ToolLog.e(TAG, "onSocketWriteResponse: " + action + "     " + str);*/
 
         }
 
