@@ -50,10 +50,10 @@ dependencies {
     implementation 'com.github.GrenderG:Toasty:1.4.2'
     //必须使用
     implementation 'com.lzy.net:okgo:3.0.4'
-    //权限请求
+   /* //权限请求
     implementation('com.yanzhenjie.permission:support:2.0.0') {
         exclude group: 'com.android.support'
-    }
+    }*/
     implementation 'com.tonystark.android:socket:4.2.3'
     implementation files('libs/usc.jar')
     implementation files('libs/sdkapi.jar')

@@ -27,9 +27,6 @@ import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
 import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
-import com.yanzhenjie.permission.Action;
-import com.yanzhenjie.permission.AndPermission;
-import com.yanzhenjie.permission.runtime.Permission;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -141,7 +138,7 @@ public class BaseApp extends Application {
      * @param dir 目标文件存放路径
      */
     public void initTTs(final String dir) {
-        if (AndPermission.hasPermissions(mContext, Permission.Group.STORAGE)) {
+      /*  if (AndPermission.hasPermissions(mContext, Permission.Group.STORAGE)) {
             if (!ToolTts.getInstance(mContext).existsTTsFile(dir)) {
                 ToolTts.getInstance(mContext).copyFile();
             }
@@ -166,7 +163,7 @@ public class BaseApp extends Application {
                 }
             }).start();
         }
-
+*/
     }
 
 

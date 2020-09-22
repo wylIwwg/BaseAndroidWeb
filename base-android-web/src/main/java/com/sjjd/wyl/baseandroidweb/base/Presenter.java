@@ -19,8 +19,6 @@ import com.sjjd.wyl.baseandroidweb.tools.ToolCommon;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolFile;
 import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
-import com.yanzhenjie.permission.Action;
-import com.yanzhenjie.permission.AndPermission;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -172,7 +170,7 @@ public class Presenter {
      * @param mPermissions
      */
     public void checkPermission(String[] mPermissions) {
-        if (mPermissions != null && mPermissions.length > 0) {
+      /*  if (mPermissions != null && mPermissions.length > 0) {
             if (AndPermission.hasPermissions(mContext, mPermissions)) {
                 mView.initData();
             } else {
@@ -195,7 +193,7 @@ public class Presenter {
             }
         } else {
             mView.showError("请到》设置》应用 授权！");
-        }
+        }*/
     }
 
     /**

@@ -25,8 +25,6 @@ import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
 import com.sjjd.wyl.baseandroidweb.view.MEditView;
-import com.yanzhenjie.permission.Action;
-import com.yanzhenjie.permission.AndPermission;
 
 import java.util.List;
 
@@ -112,7 +110,7 @@ public class BaseActivity2 extends AppCompatActivity implements BaseDataHandler.
     }
 
     public void hasPermission() {
-        if (PERMISSIONS != null && PERMISSIONS.length > 0) {
+      /*  if (PERMISSIONS != null && PERMISSIONS.length > 0) {
             if (AndPermission.hasPermissions(mContext, PERMISSIONS)) {
                 initData();
             } else {
@@ -133,7 +131,7 @@ public class BaseActivity2 extends AppCompatActivity implements BaseDataHandler.
                         })
                         .start();
             }
-        }
+        }/*/
     }
 
     PopupWindow popLoading;
