@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/btnTestBT"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/testprinterbt2" />
+
+    <Button
+        android:id="@+id/btnTestBLE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/testprinterbt4" />
+
+    <Button
+        android:id="@+id/btnTestNET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/testprinternet" />
+
+    <Button
+        android:id="@+id/btnTestUSB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/testprinterusb" />
+
+    <TextView
+        android:id="@+id/textViewTicketType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/tickettype" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/radioButtonTicket58"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/tickettype58mm" />
+
+        <RadioButton
+            android:id="@+id/radioButtonTicket80"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tickettype80mm" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/textViewHardware"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hardwarefunction" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/checkBoxCutter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cutter" >
+        </CheckBox>
+
+        <CheckBox
+            android:id="@+id/checkBoxDrawer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/drawer" >
+        </CheckBox>
+
+        <CheckBox
+            android:id="@+id/checkBoxBeeper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/beeper" >
+        </CheckBox>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewPrintCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/printcount" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintCount1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/count1" />
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintCount10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/count10" />
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintCount100"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/count100" />
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintCount1000"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/count1000" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/textViewPrintContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/printcontent" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintContentS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/small" />
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintContentM"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/middle" />
+
+        <RadioButton
+            android:id="@+id/radioButtonPrintContentL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/large" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/checkBoxAutoPrint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/autoprint" >
+        </CheckBox>
+
+        <CheckBox
+            android:id="@+id/checkBoxPictureCompress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bitmapcompress" >
+        </CheckBox>
+        
+    </LinearLayout>
+
+</LinearLayout>

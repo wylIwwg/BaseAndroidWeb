@@ -1,5 +1,6 @@
 package com.sjjd.wyl.basedemo;
 
+import android.app.DialogFragment;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
@@ -13,19 +14,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sjjd.wyl.baseandroidweb.adapter.CommonAdapter;
 import com.sjjd.wyl.baseandroidweb.adapter.ViewHolder;
 import com.sjjd.wyl.baseandroidweb.base.BaseActivity2;
-import com.sjjd.wyl.baseandroidweb.bean.Banner;
-import com.sjjd.wyl.baseandroidweb.socket.SocketManager;
+import com.sjjd.wyl.baseandroidweb.bean.BBanner;
+import com.sjjd.wyl.baseandroidweb.tekcos.SocketManager;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
+import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
 import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.sjjd.wyl.baseandroidweb.tools.ToolWifi;
 import com.sjjd.wyl.baseandroidweb.view.ImageBanner;
 import com.sjjd.wyl.baseandroidweb.view.ItemScrollLayoutManager;
+import com.sjjd.wyl.baseandroidweb.view.SettingDialog;
 import com.sjjd.wyl.baseandroidweb.view.SuperBanner;
 import com.sjjd.wyl.baseandroidweb.view.VerticalScrollTextView;
 import com.yanzhenjie.permission.runtime.Permission;
@@ -38,7 +42,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
 public class MainActivity extends BaseActivity2 {
 
     Button mBtnPlayer;
@@ -57,7 +60,6 @@ public class MainActivity extends BaseActivity2 {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         mContext = this;
-
 
         PERMISSIONS = new String[]{Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE, Permission.READ_PHONE_STATE};
        /* setLeftTitleName("左边标题");
@@ -82,8 +84,27 @@ public class MainActivity extends BaseActivity2 {
         initListener();
         hasPermission();
 
+        mDataHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(null, "11111", Toast.LENGTH_SHORT).show();
+            }
+        }, 1000);
+
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        ToolLog.e(TAG, "【onSaveInstanceState】");
+        ToolApp.restartApp(mContext);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        ToolLog.e(TAG, "【onUserLeaveHint】");
+        super.onUserLeaveHint();
+    }
 
     @Override
     public void initListener() {
@@ -134,7 +155,7 @@ public class MainActivity extends BaseActivity2 {
 
 
     private void initSetting() {
-        mSettingView = LayoutInflater.from(mContext).inflate(R.layout.item_setting, null);
+        mSettingView = LayoutInflater.from(mContext).inflate(R.layout.item_settings, null);
 
         LinearLayout.LayoutParams mParams = new LinearLayout.LayoutParams(ToolDisplay.dip2px(mContext, 200), -2);
         //  mParams.setMargins(20, 50, 5, 50);
@@ -223,6 +244,19 @@ public class MainActivity extends BaseActivity2 {
         mHolder.mRlvDepart.setAdapter(mDepartAdapter);
     }
 
+    public void ANR(View view) {
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void EXCPETION(View view) {
+        int i = 0;
+        Toast.makeText(mContext, 10 / i, Toast.LENGTH_SHORT).show();
+    }
+
     /*SpeechSynthesizer mTTSPlayer;
 
 
@@ -289,13 +323,13 @@ public class MainActivity extends BaseActivity2 {
                 "https://s1.ax1x.com/2018/11/16/ixCgwn.jpg"
         };
 
-        List<Banner> mBanners = new ArrayList<>();
+        List<BBanner> mBBanners = new ArrayList<>();
         for (int i = 0; i < mStrings.length; i++) {
-            Banner nb = new Banner();
+            BBanner nb = new BBanner();
             nb.setUrl(mStrings[i]);
-            mBanners.add(nb);
+            mBBanners.add(nb);
         }
-        mBanner.startPlayLoop(mBanners, 3000, 500);
+        mBanner.startPlayLoop(mBBanners, 3000, 500);
 
         List<String> data = new ArrayList<>();
         for (int i = 0; i < 1; i++) {
@@ -494,19 +528,14 @@ public class MainActivity extends BaseActivity2 {
 
     public void showInfo(View view) {
 
-
         mTvMac.setText("\n"
-                + ToolDevice.getMacFromWlan0() + "\n"
                 + ToolDevice.getMacFromCatOrder() + "\n"
-                + ToolDevice.getMachineHardwareAddress() + "\n"
-                + ToolDevice.getMacFromWifiManager(mContext) + "\n"
                 + getMachineHardwareAddress() + "\n"
                 + ToolWifi.getBroadcastAddress() + "\n\n"
                 + INFO()
-
-
         );
-
-
+        SettingDialog mDialog = SettingDialog.newInstance();
+        mDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.Dialog_FullScreen);
+        mDialog.show(getFragmentManager(), "");
     }
 }

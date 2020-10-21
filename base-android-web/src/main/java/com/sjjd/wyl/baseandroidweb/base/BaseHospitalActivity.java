@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.LogUtils;
 import com.lztek.toolkit.Lztek;
 import com.lzy.okgo.OkGo;
@@ -31,7 +32,6 @@ import com.sjjd.wyl.baseandroidweb.listeners.RegisterListener;
 import com.sjjd.wyl.baseandroidweb.thread.RestartThread;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
-import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
 import com.sjjd.wyl.baseandroidweb.tools.ToolCommon;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
@@ -420,7 +420,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             mDataHandler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    ToolApp.restartApp(mContext);
+                                    AppUtils.relaunchApp(true);
                                 }
                             }, 2000);
                             break;
@@ -453,14 +453,14 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             String mRegister_code = mObject.getString("register_code");
                             boolean registered = ToolRegister.getInstance(mContext).registerDevice(mRegister_code);
                             if (registered) {
-                                Toasty.success(mContext, "设备注册成功", Toast.LENGTH_SHORT, true).show();
+                                Toasty.info(mContext, "注册信息已修改，软件即将重启", Toast.LENGTH_SHORT, true).show();
                                 if (mDataHandler != null)
                                     mDataHandler.postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
-                                            ToolApp.restartApp(mContext);
+                                            AppUtils.relaunchApp(true);
                                         }
-                                    }, 1000);
+                                    }, 2000);
                             }
                             break;
                         case "init": //socket连接成功之后 做初始化操作
@@ -823,7 +823,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 byte[] buffer = new byte[4];
                 System.arraycopy(header, 0, buffer, 0, 4);
                 int len = bytesToInt(buffer, 0);
-               // ToolLog.e(TAG, "getBodyLength: " + (len - 8));
+                // ToolLog.e(TAG, "getBodyLength: " + (len - 8));
                 return len - 8;
             }
 

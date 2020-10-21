@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SET_TIME" />
 
     <application
         android:name=".App"
@@ -14,18 +15,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".WebActivity">
+        <activity android:name=".SettingActivity"></activity>
+        <activity android:name=".HardwareActivity" />
+        <activity android:name=".RootActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".HospitalActivity" />
+        <activity android:name=".WebActivity" />
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="stateHidden|adjustPan">
+            android:windowSoftInputMode="stateHidden|adjustPan"></activity>
 
-        </activity>
+        <service
+            android:name="com.sjjd.wyl.baseandroidweb.appTopService.AppTopService"
+            android:process=":AppTopService" />
     </application>
 
 </manifest>

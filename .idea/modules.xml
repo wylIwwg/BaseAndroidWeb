@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BaseAndroidWeb.iml" filepath="$PROJECT_DIR$/BaseAndroidWeb.iml" />
-      <module fileurl="file://$PROJECT_DIR$/BaseDemo/BaseDemo.iml" filepath="$PROJECT_DIR$/BaseDemo/BaseDemo.iml" />
-      <module fileurl="file://$PROJECT_DIR$/base-android-web/base-android-web.iml" filepath="$PROJECT_DIR$/base-android-web/base-android-web.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tts/tts.iml" filepath="$PROJECT_DIR$/tts/tts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BaseAndroidWeb.iml" filepath="$PROJECT_DIR$/BaseAndroidWeb.iml" group="BaseAndroidWeb" />
+      <module fileurl="file://$PROJECT_DIR$/BaseDemo/BaseDemo.iml" filepath="$PROJECT_DIR$/BaseDemo/BaseDemo.iml" group="BaseAndroidWeb/BaseDemo" />
+      <module fileurl="file://$PROJECT_DIR$/base-android-web/base-android-web.iml" filepath="$PROJECT_DIR$/base-android-web/base-android-web.iml" group="BaseAndroidWeb/base-android-web" />
+      <module fileurl="file://$PROJECT_DIR$/hardware/hardware.iml" filepath="$PROJECT_DIR$/hardware/hardware.iml" group="BaseAndroidWeb/hardware" />
+      <module fileurl="file://$PROJECT_DIR$/tts/tts.iml" filepath="$PROJECT_DIR$/tts/tts.iml" group="BaseAndroidWeb/tts" />
     </modules>
   </component>
 </project>

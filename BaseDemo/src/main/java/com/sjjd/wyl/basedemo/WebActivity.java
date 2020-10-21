@@ -14,7 +14,7 @@ import com.just.agentweb.AgentWeb;
 import com.just.agentweb.WebChromeClient;
 import com.just.agentweb.WebViewClient;
 import com.sjjd.wyl.baseandroidweb.base.BaseWebActivity;
-import com.sjjd.wyl.baseandroidweb.socket.SocketManager;
+import com.sjjd.wyl.baseandroidweb.tekcos.SocketManager;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 
@@ -25,7 +25,7 @@ public class WebActivity extends BaseWebActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // setContentView(R.layout.activity_web);
+        // setContentView(R.layout-land.activity_web);
         mAgentWeb = AgentWeb.with(this)
                 .setAgentWebParent((LinearLayout) mBaseLlRoot, new LinearLayout.LayoutParams(-1, -1))
                 .closeIndicator()

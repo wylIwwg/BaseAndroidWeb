@@ -19,6 +19,18 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:onClick="EXCPETION"
+                android:text="EXCPETION" />
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:onClick="ANR"
+                android:text="ANR" />
+
             <com.sjjd.wyl.baseandroidweb.view.VerticalScrollTextView
                 android:id="@+id/tvVs"
                 android:layout_width="250px"
