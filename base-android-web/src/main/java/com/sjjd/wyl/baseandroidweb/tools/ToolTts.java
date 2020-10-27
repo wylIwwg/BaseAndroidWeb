@@ -27,7 +27,7 @@ public class ToolTts {
     static Object mObject = new Object();
     static Context mContext;
 
-    public static ToolTts getInstance(Context context) {
+    public static ToolTts Instance(Context context) {
         mContext = context;
         if (mToolTts == null) {
             synchronized (mObject) {
@@ -101,9 +101,7 @@ public class ToolTts {
                     FileIOUtils.writeFileFromString(mFile, backName + ":" + FileUtils.getSize(mFileBack) + "\n" + frontName + ":" + FileUtils.getSize(mFileFont));
                 }
             }
-        }).
-
-                start();
+        }).start();
 
 
     }
@@ -138,81 +136,28 @@ public class ToolTts {
     /**
      * 初始化呼叫
      */
-    public void initTts(Context context) {
-        // 初始化语音合成对象
-        mTTSPlayer = new SpeechSynthesizer(context, Config.appKey, Config.secret);
-        // 设置本地合成
-        mTTSPlayer.setOption(SpeechConstants.TTS_SERVICE_MODE, SpeechConstants.TTS_SERVICE_MODE_LOCAL);
-        // 设置前端模型
-        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_FRONTEND_MODEL_PATH, defaultDir + frontName);
-        // 设置后端模型
-        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, defaultDir + backName);
-        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_SPEED, 30);
-        mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_VOLUME, 100);
+    public ToolTts initTts() {
+        if (mTTSPlayer == null) {
+            // 初始化语音合成对象
+            mTTSPlayer = new SpeechSynthesizer(mContext, Config.appKey, Config.secret);
+            // 设置本地合成
+            mTTSPlayer.setOption(SpeechConstants.TTS_SERVICE_MODE, SpeechConstants.TTS_SERVICE_MODE_LOCAL);
+            // 设置前端模型
+            mTTSPlayer.setOption(SpeechConstants.TTS_KEY_FRONTEND_MODEL_PATH, defaultDir + frontName);
+            // 设置后端模型
+            mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, defaultDir + backName);
+            mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_SPEED, 30);
+            mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_VOLUME, 100);
+            // 初始化合成引擎
+            int mInit = mTTSPlayer.init("");
+            ToolLog.e(TAG, "initTts: " + mInit);
+        }
 
-        // 设置回调监听
-        mTTSPlayer.setTTSListener(new SpeechSynthesizerListener() {
-
-            @Override
-            public void onEvent(int type) {
-                switch (type) {
-                    case SpeechConstants.TTS_EVENT_INIT:
-                        // 初始化成功回调
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_INIT");
-                        break;
-                    case SpeechConstants.TTS_EVENT_SYNTHESIZER_START:
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_SYNTHESIZER_START");
-                        // 开始合成回调
-                        break;
-                    case SpeechConstants.TTS_EVENT_SYNTHESIZER_END:
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_SYNTHESIZER_END");
-                        // 合成结束回调
-                        break;
-                    case SpeechConstants.TTS_EVENT_BUFFER_BEGIN:
-                        // 开始缓存回调
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_BUFFER_BEGIN");
-                        break;
-                    case SpeechConstants.TTS_EVENT_BUFFER_READY:
-                        // 缓存完毕回调
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_BUFFER_READY");
-                        break;
-                    case SpeechConstants.TTS_EVENT_PLAYING_START:
-                        // 开始播放回调
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_PLAYING_START");
-                        break;
-                    case SpeechConstants.TTS_EVENT_PLAYING_END:
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_PLAYING_END");
-                        break;
-                    case SpeechConstants.TTS_EVENT_PAUSE:
-                        // 暂停回调
-                        break;
-                    case SpeechConstants.TTS_EVENT_RESUME:
-                        // 恢复回调
-                        break;
-                    case SpeechConstants.TTS_EVENT_STOP:
-                        // 停止回调
-                        ToolLog.e(TAG, "onEvent: TTS_EVENT_STOP");
-                        break;
-                    case SpeechConstants.TTS_EVENT_RELEASE:
-                        // 释放资源回调
-                        break;
-                    default:
-                        break;
-                }
-
-            }
-
-            @Override
-            public void onError(int type, String errorMSG) {
-                // 语音合成错误回调
-            }
-        });
-        // 初始化合成引擎
-        int mInit = mTTSPlayer.init("");
-        ToolLog.e(TAG, "initTts: " + mInit);
+        return this;
     }
 
-    public void initTtsSetting(BVoiceSetting mVoiceSetting) {
+    public ToolTts initTtsSetting(BVoiceSetting mVoiceSetting) {
+
         mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_VOLUME, 100);
         mTTSPlayer.setOption(SpeechConstants.TTS_KEY_VOICE_SPEED, (mVoiceSetting.getVoSpeed().length() > 0 ? Integer.parseInt(mVoiceSetting.getVoSpeed()) * 10 : 30));
         /*voiceFormat = mVoiceSetting.getVoFormat();
@@ -222,5 +167,6 @@ public class ToolTts {
             voiceCount = voiceCount > 0 ? voiceCount : 1;
         }*/
         //  mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, TTSManager.getInstance(mContext).defaultDir + TTSManager.getInstance(mContext).backName);
+        return this;
     }
 }

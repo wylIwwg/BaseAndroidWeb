@@ -56,7 +56,7 @@ public class SoundPoolManager {
         rightSoundId = soundPool.load(context, resId, 1);
     }
 
-    public static SoundPoolManager getInstance(Context context, int id) {
+    public static SoundPoolManager Instance(Context context, int id) {
         if (instance == null) {
             instance = new SoundPoolManager(context, id);
         }

@@ -5,30 +5,30 @@ package com.sjjd.wyl.baseandroidweb.bean;
  */
 public class BResult {
     private String state;
-    private String msg;
-    private String type;
+    private String message;
+    private Object data;
 
     public String getState() {
         return state == null ? "" : state;
     }
 
     public void setState(String state) {
-        this.state = state;
+        this.state = state == null ? "" : state;
     }
 
-    public String getMsg() {
-        return msg == null ? "" : msg;
+    public String getMessage() {
+        return message == null ? "" : message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String message) {
+        this.message = message == null ? "" : message;
     }
 
-    public String getType() {
-        return type == null ? "" : type;
+    public Object getData() {
+        return data;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setData(Object data) {
+        this.data = data;
     }
 }

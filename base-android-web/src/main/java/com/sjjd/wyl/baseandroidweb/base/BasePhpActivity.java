@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -12,17 +13,22 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.LogUtils;
+import com.lztek.toolkit.Lztek;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.sjjd.wyl.baseandroidweb.R;
+import com.sjjd.wyl.baseandroidweb.bean.BPower;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult;
+import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
+import com.sjjd.wyl.baseandroidweb.thread.RestartThread;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
@@ -81,13 +87,18 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     public String[] mPermissions;
 
     ///默认语音格式
-    public String voiceFormat = "请(line)(name)到(department)(room)(doctor)就诊";
+    public String voiceFormat = "请(line)(name)到(department)(room)(doctor)办理业务";
 
     public Presenter mPresenter;
     public SimpleDateFormat mDateFormat;
     public SimpleDateFormat mTimeFormat;
     public SimpleDateFormat mWeekFormat;
     public TimeThread mTimeThread;
+
+
+    public RestartThread mRestartThread;
+    public String mRebootStarTime = "";//开关机 开机时间
+    public String mRebootEndTime = "";//开关机 关机时间
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +130,27 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
         mTimeThread.start();
     }
 
+    /**
+     * 开启开关机线程
+     */
+    public void startRebootThread() {
+        mRestartThread = new RestartThread(mContext, mDataHandler);
+        mRestartThread.sleep_time = 10 * 1000;
+        //重启设备线程 固定时间
+        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
+        if (power.length() > 0) {
+            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
+            if (pbd != null) {
+                mRebootStarTime = pbd.getStarTime();
+                mRebootEndTime = pbd.getEndTime();
+                if (mRebootEndTime.length() > 0) {//关机时间
+                    mRestartThread.setRebootTime(mRebootEndTime);
+                }
+            }
+        }
+        mRestartThread.start();
+    }
+
     public void hasPermission() {
         mPresenter.checkPermission(mPermissions);
     }
@@ -137,7 +169,7 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     public void initData() {
         initListener();
 
-        BRegisterResult mRegisterResult = ToolRegister.getInstance(mContext).checkDeviceRegisteredPhp();
+        BRegisterResult mRegisterResult = ToolRegister.Instance(mContext).checkDeviceRegisteredPhp();
         mRegisterCode = mRegisterResult.getRegisterCode();
         isRegistered = mRegisterResult.isRegistered();
         mRegisterViper = mRegisterResult.getRegisterStr();
@@ -159,7 +191,11 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
         }
         mHost = String.format(IConfigs.HOST, mIP, mHttpPort);
 
-
+        Map<String, ?> mAll = ToolSP.getAll();
+        LogUtils.file("【本地配置信息】：");
+        for (String str : mAll.keySet()) {
+            LogUtils.file("key= " + str + " value= " + mAll.get(str).toString());
+        }
     }
 
     @Override
@@ -182,13 +218,13 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     }
 
     @Override
-    public void showMessage(final BResult result) {
+    public void showMessage(final BResult2 result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
         LogUtils.file(ERROR, JSON.toJSONString(result));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if ("200".equals(result.getState()))
+                if ("200".equals(result.getCode()))
                     Toasty.success(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
                 else
                     Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
@@ -224,6 +260,25 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     @Override
     public void userHandler(Message msg) {
         switch (msg.what) {
+            case IConfigs.MSG_REBOOT_LISTENER://设备关机 重启
+                int mins;
+                if (mRebootStarTime != null && mRebootStarTime.contains(":")) {
+                    String[] ends = mRebootEndTime.split(":");
+                    String[] starts = mRebootStarTime.split(":");
+                    int endhour = Integer.parseInt(ends[0]);
+                    int endmin = Integer.parseInt(ends[1]);
+                    int starthour = Integer.parseInt(starts[0]);
+                    int startmin = Integer.parseInt(starts[1]);
+                    if (starthour >= endhour) {//当天
+                        mins = (starthour - endhour) * 60 + (startmin - endmin);
+                    } else {//
+                        mins = (starthour + 24 - endhour) * 60 + (startmin - endmin);
+                    }
+                } else {
+                    mins = 30;
+                }
+                showInfo("设备即将关机，将在" + mins + "分钟后重启");
+                hardReboot(60 * mins);
             case IConfigs.NET_TIME_CHANGED:
                 HashMap<String, String> times = (HashMap<String, String>) msg.obj;
                 if (times != null) {
@@ -297,23 +352,44 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                             }
                             break;
                         case "upgrade":
+                            showInfo("收到软件更新");
+                            String cloudVersionCode = mObject.get("version").toString();
+                            String mApply = mObject.get("apply").toString();
+                            if (TextUtils.isEmpty(cloudVersionCode) || TextUtils.isEmpty(mApply))
+                                return;
 
-                            if (ToolLog.showLog) {
-                                showError("收到软件更新！");
-                            }
-                            int cloudVersionCode = mObject.getIntValue("version");
-                            String mApply = mObject.getString("apply");
-                            ToolLog.e(TAG, "handleMessage: " + cloudVersionCode + "  " + mApply + "  " + mObject.getInteger("version"));
-                            if (cloudVersionCode > ToolApp.getAppVersionCode(mContext, getPackageName()) && mApply.length() > 0
+                            if (Integer.parseInt(cloudVersionCode) > AppUtils.getAppVersionCode() && mApply.length() > 0
                                     && mApply.toLowerCase().endsWith("apk")) {
-
                                 mPresenter.downloadApk(mApply);
                             }
                             break;
                         case "restart":
-                            Toasty.info(mContext, "设备即将重启", Toast.LENGTH_LONG).show();
+                            showInfo("设备即将重启");
                             hardReboot(0);
 
+                            break;
+                        case "restartApp"://重启软件
+                            showInfo("软件即将重启");
+                            mDataHandler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AppUtils.relaunchApp(true);
+                                }
+                            }, 2000);
+                            break;
+                        case "timing"://定时开关机
+                            BPower mPowerBean = JSON.parseObject(obj, BPower.class);
+                            if (mPowerBean != null) {
+                                BPower.Data pbd = mPowerBean.getData();
+                                if (pbd != null) {
+                                    mRebootStarTime = pbd.getStarTime();
+                                    mRebootEndTime = pbd.getEndTime();
+                                    if (mRebootEndTime.length() > 0 && mRestartThread != null) {//关机时间
+                                        mRestartThread.setRebootTime(mRebootEndTime);
+                                    }
+                                    ToolSP.putDIYString(IConfigs.SP_POWER, JSON.toJSONString(pbd));
+                                }
+                            }
                             break;
 
                     }
@@ -322,6 +398,18 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                 }
         }
 
+    }
+
+
+    public void showInfo(final String info) {
+        ToolLog.e(ERROR, info);
+        LogUtils.file(ERROR, info);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toasty.info(mContext, info, Toast.LENGTH_LONG, true).show();
+            }
+        });
     }
 
     /**
@@ -348,6 +436,7 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
             mSocketManager.disconnect();
             mSocketManager = null;
         }
+
     }
 
 
@@ -393,92 +482,17 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     public String URL_UPDATE_VOICE;//修改语音完成的链接http
     public String URL_UPLOAD_SCREEN;//上传截图链接http
 
-    public void initTTsListener() {
-        if (mTTSPlayer == null) {
-            mTTSPlayer = ToolTts.getInstance(mContext).getTTSPlayer();
-            if (mTTSPlayer == null) {
-                ToolTts.getInstance(mContext).initTts(mContext);
-                mTTSPlayer = ToolTts.getInstance(mContext).getTTSPlayer();
-            }
-        }
-        if (mTTSPlayer != null) {
+    public void InitTtsSetting() {
 
-            initTts();
+        ToolTts.Instance(mContext).initTts().initTtsSetting(mVoiceSetting);
 
-            mTTSPlayer.setTTSListener(new SpeechSynthesizerListener() {
-                @Override
-                public void onEvent(int type) {
-                    switch (type) {
-                        case SpeechConstants.TTS_EVENT_PLAYING_START:
-                            ToolLog.e(TAG, "onEvent:  TTS_EVENT_PLAYING_START ");
-                            isSpeeking = true;
-                            speakTimes++;
-                            break;
-                        case SpeechConstants.TTS_EVENT_PLAYING_END:
-                            isSpeeking = false;
-                            if (isSpeakTest) {
-                                isSpeakTest = false;
-                                return;
-                            }
+        mTTSPlayer = ToolTts.Instance(mContext).getTTSPlayer();
 
-                            if (speakTimes == voiceCount) {//播放次数达标
-                                // 呼叫成功 通知后台改状态
-                                if (mapVoice != null && mapVoice.size() > 0 && mNext != null) {
-
-                                    String url = URL_UPDATE_VOICE + mNext.getPatientId();
-                                    OkGo.<String>get(url)
-                                            .tag(this).execute(new StringCallback() {
-                                        @Override
-                                        public void onSuccess(Response<String> response) {
-                                            isSpeeking = false;
-                                            if (response != null && response.body().contains("1")) {
-                                                //修改状态成功后再移除
-                                                mapVoice.remove(mNext.getPatientId());
-                                                //继续播报下一个
-                                                hasVoiceSpeak();
-
-                                            } else {
-                                                //重复呼叫
-                                                speakTimes = 0;
-                                                ttsSpeak();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onError(Response<String> response) {
-                                            super.onError(response);
-                                            //网络请求出错 重复呼叫
-                                            isSpeeking = false;
-                                            showError("播放语音完成 " + response.body());
-                                            ttsSpeak();
-                                        }
-                                    });
-                                }
-                            } else {
-                                //重复呼叫
-                                mDataHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ttsSpeak();
-                                    }
-                                }, 1000);
-                            }
-
-
-                            break;
-                    }
-                }
-
-                @Override
-                public void onError(int i, String s) {
-                    //语音播报失败
-                    isSpeeking = false;
-                    //重复呼叫
-                    speakTimes = 0;
-                    ttsSpeak();
-
-                }
-            });
+        voiceFormat = mVoiceSetting.getVoFormat();
+        String mNumber = mVoiceSetting.getVoNumber();
+        if (mNumber.length() > 0) {
+            voiceCount = Integer.parseInt(mNumber);
+            voiceCount = voiceCount > 0 ? voiceCount : 1;
         }
 
     }
@@ -558,7 +572,7 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     public BVoiceSetting mVoiceSetting;//语音设置
 
     public void initTts() {
-        ToolTts.getInstance(mContext).initTtsSetting(mVoiceSetting);
+        ToolTts.Instance(mContext).initTtsSetting(mVoiceSetting);
         voiceFormat = mVoiceSetting.getVoFormat();
         String mNumber = mVoiceSetting.getVoNumber();
         if (mNumber.length() > 0) {

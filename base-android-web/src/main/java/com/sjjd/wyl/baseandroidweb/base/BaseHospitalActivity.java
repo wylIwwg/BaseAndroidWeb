@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.LogUtils;
+import com.blankj.utilcode.util.SPUtils;
 import com.lztek.toolkit.Lztek;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
@@ -25,6 +26,7 @@ import com.sjjd.wyl.baseandroidweb.bean.BPower;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult;
+import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
@@ -217,12 +219,17 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             mVoiceSetting.setVoSpeed("3");
         }
 
+        Map<String, ?> mAll = ToolSP.getAll();
+        LogUtils.file("【本地配置信息】：");
+        for (String str : mAll.keySet()) {
+            LogUtils.file("key= " + str + " value= " + mAll.get(str).toString());
+        }
     }
 
 
     public void initData() {
+        initSetting();
         initListener();
-
 
     }
 
@@ -246,18 +253,9 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
     @Override
-    public void showMessage(final BResult result) {
+    public void showMessage(final BResult2 result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
         LogUtils.file(ERROR, JSON.toJSONString(result));
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if ("200".equals(result.getState()))
-                    Toasty.success(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
-                else
-                    Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
-            }
-        });
     }
 
     @Override
@@ -268,6 +266,17 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             @Override
             public void run() {
                 Toasty.error(mContext, error, Toast.LENGTH_LONG, true).show();
+            }
+        });
+    }
+
+    public void showInfo(final String info) {
+        ToolLog.e(ERROR, info);
+        LogUtils.file(ERROR, info);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toasty.info(mContext, info, Toast.LENGTH_LONG, true).show();
             }
         });
     }
@@ -296,7 +305,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         switch (msg.what) {
             case IConfigs.MSG_REBOOT_LISTENER://设备关机 重启
                 int mins;
-                if (mRebootStarTime.length() > 0) {
+                if (mRebootStarTime != null && mRebootStarTime.contains(":")) {
                     String[] ends = mRebootEndTime.split(":");
                     String[] starts = mRebootStarTime.split(":");
                     int endhour = Integer.parseInt(ends[0]);
@@ -311,8 +320,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                 } else {
                     mins = 30;
                 }
-
-                Toasty.info(mContext, "设备即将关机，将在" + mins + "分钟后重启", Toast.LENGTH_LONG).show();
+                showInfo("设备即将关机，将在" + mins + "分钟后重启");
                 hardReboot(60 * mins);
             case IConfigs.NET_TIME_CHANGED:
                 HashMap<String, String> times = (HashMap<String, String>) msg.obj;
@@ -411,12 +419,12 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             }
                             break;
                         case "restart":
-                            Toasty.info(mContext, "设备即将重启", Toast.LENGTH_LONG).show();
+                            showInfo("设备即将重启");
                             hardReboot(0);
 
                             break;
                         case "restartApp"://重启软件
-                            Toasty.info(mContext, "软件即将重启", Toast.LENGTH_LONG, true).show();
+                            showInfo("软件即将重启");
                             mDataHandler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -425,9 +433,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             }, 2000);
                             break;
                         case "upgrade"://更新apk
-                            if (ToolLog.showLog) {
-                                Toasty.info(mContext, "收到软件更新", Toast.LENGTH_LONG, true).show();
-                            }
+                            showInfo("收到软件更新");
                             String link = mObject.getString("link");
                             if (link.length() > 0)
                                 downloadApk(mHost + link);
@@ -451,7 +457,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
 */
                         case "register"://在线注册
                             String mRegister_code = mObject.getString("register_code");
-                            boolean registered = ToolRegister.getInstance(mContext).registerDevice(mRegister_code);
+                            boolean registered = ToolRegister.Instance(mContext).registerDevice(mRegister_code);
                             if (registered) {
                                 Toasty.info(mContext, "注册信息已修改，软件即将重启", Toast.LENGTH_SHORT, true).show();
                                 if (mDataHandler != null)
@@ -481,7 +487,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             mVoiceSetting = JSON.parseObject(mObject.get("data").toString(), BVoiceSetting.class);
                             if (mVoiceSetting != null) {
                                 ToolSP.putDIYString(IConfigs.SP_VOICE_TEMP, JSON.toJSONString(mVoiceSetting));
-                                initTts();
+                                InitTtsSetting();
                             }
 
                             break;
@@ -591,95 +597,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public String URL_UPDATE_VOICE;//修改语音完成的链接http
     public String URL_UPLOAD_SCREEN;//上传截图链接http
 
-    public void initTTsListener() {
-        if (mTTSPlayer == null) {
-            mTTSPlayer = ToolTts.getInstance(mContext).getTTSPlayer();
-            if (mTTSPlayer == null) {
-                ToolTts.getInstance(mContext).initTts(mContext);
-                mTTSPlayer = ToolTts.getInstance(mContext).getTTSPlayer();
-            }
-        }
-        if (mTTSPlayer != null) {
-
-            initTts();
-
-            mTTSPlayer.setTTSListener(new SpeechSynthesizerListener() {
-                @Override
-                public void onEvent(int type) {
-                    switch (type) {
-                        case SpeechConstants.TTS_EVENT_PLAYING_START:
-                            ToolLog.e(TAG, "onEvent:  TTS_EVENT_PLAYING_START ");
-                            isSpeeking = true;
-                            speakTimes++;
-                            break;
-                        case SpeechConstants.TTS_EVENT_PLAYING_END:
-                            isSpeeking = false;
-                            if (isSpeakTest) {
-                                isSpeakTest = false;
-                                return;
-                            }
-
-                            if (speakTimes >= voiceCount) {//播放次数达标
-                                // 呼叫成功 通知后台改状态
-                                if (mapVoice != null && mapVoice.size() > 0 && mNext != null) {
-
-                                    String url = URL_UPDATE_VOICE + mNext.getPatientId();
-                                    OkGo.<String>get(url)
-                                            .tag(this).execute(new StringCallback() {
-                                        @Override
-                                        public void onSuccess(Response<String> response) {
-                                            isSpeeking = false;
-                                            if (response != null && response.body().contains("1")) {
-                                                //修改状态成功后再移除
-                                                mapVoice.remove(mNext.getPatientId());
-                                                //继续播报下一个
-                                                hasVoiceSpeak();
-
-                                            } else {
-                                                //重复呼叫
-                                                speakTimes = 0;
-                                                ttsSpeak();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onError(Response<String> response) {
-                                            super.onError(response);
-                                            //网络请求出错 重复呼叫
-                                            isSpeeking = false;
-                                            showError("播放语音完成 " + response.body());
-                                            ttsSpeak();
-                                        }
-                                    });
-                                }
-                            } else {
-                                //重复呼叫
-                                mDataHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ttsSpeak();
-                                    }
-                                }, 1000);
-                            }
-
-
-                            break;
-                    }
-                }
-
-                @Override
-                public void onError(int i, String s) {
-                    //语音播报失败
-                    isSpeeking = false;
-                    //重复呼叫
-                    speakTimes = 0;
-                    ttsSpeak();
-
-                }
-            });
-        }
-
-    }
 
     //是否可以播报
     public void hasVoiceSpeak() {
@@ -743,8 +660,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
      *
      * @param txt
      */
-    private synchronized void ttsSpeak(String txt) {
-        //"请(line)(name)到(department)(room)(doctor)就诊"
+    private synchronized void TTsSpeak(String txt) {
         if (txt != null && mTTSPlayer != null) {
             mTTSPlayer.playText(txt);
         }
@@ -754,15 +670,19 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public int voiceCount = 1;//语音播报次数 默认1次
     public BVoiceSetting mVoiceSetting;//语音设置
 
-    public void initTts() {
-        ToolTts.getInstance(mContext).initTtsSetting(mVoiceSetting);
+    public void InitTtsSetting() {
+
+        ToolTts.Instance(mContext).initTts().initTtsSetting(mVoiceSetting);
+
+        mTTSPlayer = ToolTts.Instance(mContext).getTTSPlayer();
+
         voiceFormat = mVoiceSetting.getVoFormat();
         String mNumber = mVoiceSetting.getVoNumber();
         if (mNumber.length() > 0) {
             voiceCount = Integer.parseInt(mNumber);
             voiceCount = voiceCount > 0 ? voiceCount : 1;
         }
-        //  mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, TTSManager.getInstance(mContext).defaultDir + TTSManager.getInstance(mContext).backName);
+
     }
 
 

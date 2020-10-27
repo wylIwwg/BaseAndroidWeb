@@ -56,13 +56,13 @@ public class ToolRegister {
         }
     }
 
-    public static ToolRegister getInstance(Context context) {
+    public static ToolRegister Instance(Context context) {
 
-        return getInstance(context, null, null);
+        return Instance(context, null, null);
 
     }
 
-    public static ToolRegister getInstance(Context context, String privateKey, String publicKey) {
+    public static ToolRegister Instance(Context context, String privateKey, String publicKey) {
         if (mContext == null) mContext = context;
         if (instance == null) {
             instance = new ToolRegister(context, privateKey, publicKey);
@@ -218,7 +218,6 @@ public class ToolRegister {
                             if (newDate2.getTime() < mMillis) {
                                 mResult.setRegisterCode(3);
                                 mResult.setRegistered(false);
-                                ToolRegister mInstance = getInstance(mContext);
                             }
                         }
 

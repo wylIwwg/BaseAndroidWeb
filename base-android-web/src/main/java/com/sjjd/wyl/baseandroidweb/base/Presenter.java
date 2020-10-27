@@ -3,8 +3,10 @@ package com.sjjd.wyl.baseandroidweb.base;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
+import com.blankj.utilcode.util.LogUtils;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.FileCallback;
 import com.lzy.okgo.callback.StringCallback;
@@ -19,11 +21,15 @@ import com.sjjd.wyl.baseandroidweb.tools.ToolCommon;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolFile;
 import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
+import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Created by wyl on 2020/5/12.
@@ -112,6 +118,12 @@ public class Presenter {
 
     }
 
+
+    /**
+     * 上传日志
+     *
+     * @param url
+     */
     private boolean isLoging = false;
     private List<File> fileList = new ArrayList<>();
 
@@ -164,13 +176,52 @@ public class Presenter {
 
     }
 
+    public void uploadLogs(String url, String sessionId, String mac) {
+        if (isLoging) return;
+
+        File dir = new File(IConfigs.PATH_LOG);
+        fileList.clear();
+        if (dir.isDirectory()) {
+            dir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    fileList.add(pathname);
+                    return false;
+                }
+            });
+            if (fileList.size() > 0) {
+                isLoging = true;
+                OkGo.<String>post(url)
+                        .params("macId", mac)
+                        .params("sessionId", sessionId)
+                        .addFileParams("files", fileList)//日志文件集合
+                        .tag(this)
+                        .execute(new JsonCallBack<String>(String.class) {
+                            @Override
+                            public void onSuccess(Response<String> response) {
+                                LogUtils.file("HTTP", "上传日志：" + response.body());
+                                isLoging = false;
+                            }
+
+                            @Override
+                            public void onError(Response<String> response) {
+                                super.onError(response);
+                                isLoging = false;
+                            }
+                        });
+            }
+        }
+
+    }
+
+
     /**
      * 检查权限
      *
      * @param mPermissions
      */
     public void checkPermission(String[] mPermissions) {
-      /*  if (mPermissions != null && mPermissions.length > 0) {
+        if (mPermissions != null && mPermissions.length > 0) {
             if (AndPermission.hasPermissions(mContext, mPermissions)) {
                 mView.initData();
             } else {
@@ -193,7 +244,7 @@ public class Presenter {
             }
         } else {
             mView.showError("请到》设置》应用 授权！");
-        }*/
+        }
     }
 
     /**
@@ -228,8 +279,18 @@ public class Presenter {
     }
 
     public void checkRegister(RegisterListener listener) {
-        BRegisterResult mRegisterResult = ToolRegister.getInstance(mContext).checkDeviceRegistered();
+        BRegisterResult mRegisterResult = ToolRegister.Instance(mContext).checkDeviceRegistered();
         if (listener != null)
             listener.RegisterCallBack(mRegisterResult);
+    }
+
+    /**
+     * 拷贝tts文件
+     */
+    public void checkTtsFiles() {
+        if (!ToolTts.Instance(mContext).existsTTsFile(IConfigs.PATH_TTS)) {
+            ToolTts.Instance(mContext).copyFile();
+        }
+
     }
 }

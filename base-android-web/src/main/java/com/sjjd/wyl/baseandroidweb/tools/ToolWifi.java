@@ -30,7 +30,7 @@ public class ToolWifi {
         mWifiManager = (WifiManager) mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
-    public static ToolWifi getInstance(Context context) {
+    public static ToolWifi Instance(Context context) {
         if (instance == null) {
             synchronized (ToolWifi.class) {
                 if (instance == null) {

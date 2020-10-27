@@ -20,6 +20,7 @@ import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult;
+import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
@@ -185,18 +186,9 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
     }
 
     @Override
-    public void showMessage(final BResult result) {
+    public void showMessage(final BResult2 result) {
         ToolLog.e(ERROR, JSON.toJSONString(result));
         LogUtils.file(ERROR, JSON.toJSONString(result));
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if ("200".equals(result.getState()))
-                    Toasty.success(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
-                else
-                    Toasty.error(mContext, result.getMsg(), Toast.LENGTH_LONG, true).show();
-            }
-        });
     }
 
     @Override
@@ -334,7 +326,7 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
 */
                         case "register"://在线注册
                             String mRegister_code = mObject.getString("register_code");
-                            boolean registered = ToolRegister.getInstance(mContext).registerDevice(mRegister_code);
+                            boolean registered = ToolRegister.Instance(mContext).registerDevice(mRegister_code);
                             if (registered) {
                                 Toasty.success(mContext, "设备注册成功", Toast.LENGTH_SHORT, true).show();
                                 if (mDataHandler != null)
@@ -446,96 +438,20 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
     public String URL_UPDATE_VOICE;//修改语音完成的链接http
     public String URL_UPLOAD_SCREEN;//上传截图链接http
 
-    public void initTTsListener() {
-        if (mTTSPlayer == null) {
-            mTTSPlayer = ToolTts.getInstance(mContext).getTTSPlayer();
-            if (mTTSPlayer == null) {
-                ToolTts.getInstance(mContext).initTts(mContext);
-                mTTSPlayer = ToolTts.getInstance(mContext).getTTSPlayer();
-            }
-        }
-        if (mTTSPlayer != null) {
+    public void InitTtsSetting() {
 
-            initTts();
+        ToolTts.Instance(mContext).initTts().initTtsSetting(mVoiceSetting);
 
-            mTTSPlayer.setTTSListener(new SpeechSynthesizerListener() {
-                @Override
-                public void onEvent(int type) {
-                    switch (type) {
-                        case SpeechConstants.TTS_EVENT_PLAYING_START:
-                            ToolLog.e(TAG, "onEvent:  TTS_EVENT_PLAYING_START ");
-                            isSpeeking = true;
-                            speakTimes++;
-                            break;
-                        case SpeechConstants.TTS_EVENT_PLAYING_END:
-                            isSpeeking = false;
-                            if (isSpeakTest) {
-                                isSpeakTest = false;
-                                return;
-                            }
+        mTTSPlayer = ToolTts.Instance(mContext).getTTSPlayer();
 
-                            if (speakTimes == voiceCount) {//播放次数达标
-                                // 呼叫成功 通知后台改状态
-                                if (mapVoice != null && mapVoice.size() > 0 && mNext != null) {
-
-                                    String url = URL_UPDATE_VOICE + mNext.getPatientId();
-                                    OkGo.<String>get(url)
-                                            .tag(this).execute(new StringCallback() {
-                                        @Override
-                                        public void onSuccess(Response<String> response) {
-                                            isSpeeking = false;
-                                            if (response != null && response.body().contains("1")) {
-                                                //修改状态成功后再移除
-                                                mapVoice.remove(mNext.getPatientId());
-                                                //继续播报下一个
-                                                hasVoiceSpeak();
-
-                                            } else {
-                                                //重复呼叫
-                                                speakTimes = 0;
-                                                ttsSpeak();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onError(Response<String> response) {
-                                            super.onError(response);
-                                            //网络请求出错 重复呼叫
-                                            isSpeeking = false;
-                                            showError("播放语音完成 " + response.body());
-                                            ttsSpeak();
-                                        }
-                                    });
-                                }
-                            } else {
-                                //重复呼叫
-                                mDataHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ttsSpeak();
-                                    }
-                                }, 1000);
-                            }
-
-
-                            break;
-                    }
-                }
-
-                @Override
-                public void onError(int i, String s) {
-                    //语音播报失败
-                    isSpeeking = false;
-                    //重复呼叫
-                    speakTimes = 0;
-                    ttsSpeak();
-
-                }
-            });
+        voiceFormat = mVoiceSetting.getVoFormat();
+        String mNumber = mVoiceSetting.getVoNumber();
+        if (mNumber.length() > 0) {
+            voiceCount = Integer.parseInt(mNumber);
+            voiceCount = voiceCount > 0 ? voiceCount : 1;
         }
 
     }
-
     //是否可以播报
     public void hasVoiceSpeak() {
         if (mapVoice != null && mapVoice.size() > 0 && "1".equals(mVoiceSwitch)) {
@@ -611,14 +527,14 @@ public class BaseWebActivity extends AppCompatActivity implements BaseDataHandle
     public BVoiceSetting mVoiceSetting;//语音设置
 
     public void initTts() {
-        ToolTts.getInstance(mContext).initTtsSetting(mVoiceSetting);
+        ToolTts.Instance(mContext).initTtsSetting(mVoiceSetting);
         voiceFormat = mVoiceSetting.getVoFormat();
         String mNumber = mVoiceSetting.getVoNumber();
         if (mNumber.length() > 0) {
             voiceCount = Integer.parseInt(mNumber);
             voiceCount = voiceCount > 0 ? voiceCount : 1;
         }
-        //  mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, TTSManager.getInstance(mContext).defaultDir + TTSManager.getInstance(mContext).backName);
+        //  mTTSPlayer.setOption(SpeechConstants.TTS_KEY_BACKEND_MODEL_PATH, TTSManager.Instance(mContext).defaultDir + TTSManager.Instance(mContext).backName);
     }
 
 

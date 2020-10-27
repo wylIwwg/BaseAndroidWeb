@@ -34,7 +34,7 @@ public class RestartThread extends Thread {
     private Object lock = new Object();
     private SimpleDateFormat mTimeFormat;
 
-    private String rebootTime = "3:00";//重启时间
+    private String rebootTime = "";//重启时间
     private String netTime = null;//网络时间
 
     public RestartThread(Context context, Handler handler) {

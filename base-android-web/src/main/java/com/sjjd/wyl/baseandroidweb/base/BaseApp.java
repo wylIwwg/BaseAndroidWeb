@@ -61,7 +61,7 @@ public class BaseApp extends Application {
                 .setTextSize(18)
                 .apply();
 
-        ToolSP.init(mContext, getPackageName());
+        ToolSP.Init(mContext, getPackageName());
 
         Utils.init(this);
 
@@ -129,41 +129,6 @@ public class BaseApp extends Application {
                 startService(service);
             }
         }, 5000);
-    }
-
-
-    /**
-     * 初始化tts语音
-     *
-     * @param dir 目标文件存放路径
-     */
-    public void initTTs(final String dir) {
-      /*  if (AndPermission.hasPermissions(mContext, Permission.Group.STORAGE)) {
-            if (!ToolTts.getInstance(mContext).existsTTsFile(dir)) {
-                ToolTts.getInstance(mContext).copyFile();
-            }
-        } else {
-            AndPermission.with(mContext)
-                    .runtime()
-                    .permission(Permission.Group.STORAGE)
-                    .permission(Permission.READ_PHONE_STATE)
-                    .onGranted(new Action<List<String>>() {
-                                   @Override
-                                   public void onAction(List<String> data) {
-                                       if (!ToolTts.getInstance(mContext).existsTTsFile(dir)) {
-                                           ToolTts.getInstance(mContext).copyFile();
-                                       }
-                                   }
-                               }
-                    ).onDenied(new Action<List<String>>() {
-
-                @Override
-                public void onAction(List<String> data) {
-                    Toasty.error(mContext, "权限拒绝，将无法播放语音", Toast.LENGTH_LONG, true).show();
-                }
-            }).start();
-        }
-*/
     }
 
 

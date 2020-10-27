@@ -1,6 +1,7 @@
 package com.sjjd.wyl.baseandroidweb.base;
 
 import com.sjjd.wyl.baseandroidweb.bean.BResult;
+import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 
 /**
  * Created by wyl on 2020/5/12.
@@ -9,7 +10,7 @@ public interface IView {
 
     void showSuccess(String success);
 
-    void showMessage(BResult result);
+    void showMessage(BResult2 result);
 
     void showError(String error);
 

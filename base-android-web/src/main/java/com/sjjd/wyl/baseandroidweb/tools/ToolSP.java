@@ -3,6 +3,10 @@ package com.sjjd.wyl.baseandroidweb.tools;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.blankj.utilcode.util.SPUtils;
+
+import java.util.Map;
+
 /**
  * Created by wyl on 2018/5/14.
  */
@@ -11,11 +15,15 @@ public class ToolSP {
     static ToolSP mToolSP = new ToolSP();
     static SharedPreferences sp;
 
-    public static ToolSP init(Context context, String pkg) {
+    public static ToolSP Init(Context context, String pkg) {
         if (sp == null) {
             sp = context.getSharedPreferences(pkg, Context.MODE_PRIVATE);
         }
         return mToolSP;
+    }
+
+    public static Map<String, ?> getAll() {
+        return sp.getAll();
     }
 
     public static ToolSP putDIYString(String key, String value) {
