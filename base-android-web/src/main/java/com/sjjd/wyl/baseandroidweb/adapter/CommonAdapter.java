@@ -109,5 +109,12 @@ public abstract class CommonAdapter<T> extends RecyclerView.Adapter<ViewHolder> 
         this.mOnItemClickListener = onItemClickListener;
     }
 
+    public void refreshData(List<T> datas) {
+        if (mDatas != null) {
+            mDatas.clear();
+            mDatas.addAll(datas);
+            notifyDataSetChanged();
+        }
+    }
 }
 
