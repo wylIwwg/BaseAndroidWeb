@@ -778,7 +778,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         @Override
         public void onSocketDisconnection(ConnectionInfo info, String action, Exception e) {
             ToolLog.e(TAG, "onSocketDisconnection");
-            LogUtils.file(SOCKET, " 【socket断开连接】");
+            LogUtils.file(SOCKET, " 【socket断开连接】" + e.toString());
             showError("socket断开连接");
 
             startLocalTime();
@@ -788,7 +788,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         @Override
         public void onSocketConnectionFailed(ConnectionInfo info, String action, Exception e) {
             ToolLog.e(TAG, "onSocketConnectionFailed");
-            LogUtils.file(SOCKET, " 【socket连接失败】");
+            LogUtils.file(SOCKET, " 【socket连接失败】" + e.toString());
             showError("socket连接失败");
         }
 
