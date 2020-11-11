@@ -364,10 +364,6 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                             }
                             break;
                         case "restart":
-                            showInfo("设备即将重启");
-                            hardReboot(0);
-
-                            break;
                         case "restartApp"://重启软件
                             showInfo("软件即将重启");
                             mDataHandler.postDelayed(new Runnable() {

@@ -391,7 +391,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             ToolSP.putDIYString(IConfigs.SP_VOICE_SWICH, mVoiceSwitch);
 
                             break;
-
+                        case "logs":
+                            String sessionId2 = mObject.getString("sessionId");
+                            mPresenter.uploadLogs(URL_UPLOAD_LOGS, sessionId2, mMac);
+                            break;
                         case "screen"://截屏请求
                             String sessionId = mObject.getString("sessionId");
                             if (TextUtils.isEmpty(URL_UPLOAD_SCREEN)) {
@@ -419,10 +422,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             }
                             break;
                         case "restart":
-                            showInfo("设备即将重启");
-                            hardReboot(0);
-
-                            break;
                         case "restartApp"://重启软件
                             showInfo("软件即将重启");
                             mDataHandler.postDelayed(new Runnable() {
@@ -596,6 +595,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public BVoice mNext;//下一位语音
     public String URL_UPDATE_VOICE;//修改语音完成的链接http
     public String URL_UPLOAD_SCREEN;//上传截图链接http
+    public String URL_UPLOAD_LOGS;//上传截图链接http
 
 
     //是否可以播报
