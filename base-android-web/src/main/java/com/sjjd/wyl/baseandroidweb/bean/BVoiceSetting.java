@@ -9,6 +9,15 @@ public class BVoiceSetting {
     private String voSpeed;
     private String voFormat;
     private String voNumber;
+    private String waitNum;
+
+    public String getWaitNum() {
+        return waitNum == null ? "" : waitNum;
+    }
+
+    public void setWaitNum(String waitNum) {
+        this.waitNum = waitNum == null ? "" : waitNum;
+    }
 
     public String getVoSex() {
         return voSex == null ? "" : voSex;
