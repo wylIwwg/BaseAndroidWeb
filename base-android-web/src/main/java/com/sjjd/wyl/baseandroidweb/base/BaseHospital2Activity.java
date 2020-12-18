@@ -1,12 +1,10 @@
 package com.sjjd.wyl.baseandroidweb.base;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -14,36 +12,25 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.LogUtils;
-import com.blankj.utilcode.util.SPUtils;
 import com.lztek.toolkit.Lztek;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-import com.lzy.okgo.model.Response;
 import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.bean.BPower;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
-import com.sjjd.wyl.baseandroidweb.bean.BResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
-import com.sjjd.wyl.baseandroidweb.bean.BVolume;
 import com.sjjd.wyl.baseandroidweb.listeners.RegisterListener;
-import com.sjjd.wyl.baseandroidweb.thread.RestartThread;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolCommon;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
 import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
-import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
-import com.unisound.client.SpeechConstants;
 import com.unisound.client.SpeechSynthesizer;
-import com.unisound.client.SpeechSynthesizerListener;
 import com.xuhao.didi.core.iocore.interfaces.IPulseSendable;
 import com.xuhao.didi.core.iocore.interfaces.ISendable;
 import com.xuhao.didi.core.pojo.OriginalData;
@@ -61,7 +48,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -97,7 +83,6 @@ public class BaseHospital2Activity extends AppCompatActivity implements BaseData
     public SimpleDateFormat mWeekFormat;
     public TimeThread mTimeThread;
 
-    public RestartThread mRestartThread;
     public String mRebootStarTime = "";//开关机 开机时间
     public String mRebootEndTime = "";//开关机 关机时间
 
@@ -147,28 +132,6 @@ public class BaseHospital2Activity extends AppCompatActivity implements BaseData
     }
 
 
-    /**
-     * 开启开关机线程
-     */
-    public void startRebootThread() {
-        mRestartThread = new RestartThread(mContext, mDataHandler);
-        mRestartThread.sleep_time = 10 * 1000;
-        //重启设备线程 固定时间
-        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
-        if (power.length() > 0) {
-            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
-            if (pbd != null) {
-                mRebootStarTime = pbd.getStarTime();
-                mRebootEndTime = pbd.getEndTime();
-                if (mRebootEndTime.length() > 0) {//关机时间
-                    mRestartThread.setRebootTime(mRebootEndTime);
-                }
-            }
-        }
-        mRestartThread.start();
-    }
-
-
     public void hasPermission() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -209,7 +172,7 @@ public class BaseHospital2Activity extends AppCompatActivity implements BaseData
         mHost = String.format(IConfigs.HOST, mIP, mHttpPort);
 
         String mVoice = ToolSP.getDIYString(IConfigs.SP_VOICE_TEMP);
-        if (mVoice != null && mVoice.length() > 0) {
+        if (mVoice.length() > 0) {
             mVoiceSetting = JSON.parseObject(mVoice, BVoiceSetting.class);
         } else {
             mVoiceSetting = new BVoiceSetting();
@@ -219,6 +182,14 @@ public class BaseHospital2Activity extends AppCompatActivity implements BaseData
             mVoiceSetting.setVoSpeed("3");
         }
 
+        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
+        if (power.length() > 0) {
+            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
+            if (pbd != null) {
+                mRebootStarTime = pbd.getStarTime();
+                mRebootEndTime = pbd.getEndTime();
+            }
+        }
         Map<String, ?> mAll = ToolSP.getAll();
         LogUtils.file("【本地配置信息】：");
         for (String str : mAll.keySet()) {
@@ -367,9 +338,6 @@ public class BaseHospital2Activity extends AppCompatActivity implements BaseData
                             String dateStr = mDateFormat.format(mDate);
                             //星期
                             String week = mWeekFormat.format(mDate);
-                            if (mRestartThread != null) {
-                                mRestartThread.setNetTime(timeStr);
-                            }
                             showTime(dateStr, timeStr, week);
                             break;
 

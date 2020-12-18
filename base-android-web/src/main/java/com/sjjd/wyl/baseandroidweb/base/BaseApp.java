@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.widget.Toast;
@@ -24,6 +25,7 @@ import com.sjjd.wyl.baseandroidweb.appTopService.AppTopService;
 import com.sjjd.wyl.baseandroidweb.crash.config.CrashConfig;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
+import com.sjjd.wyl.baseandroidweb.tools.ToolLZ;
 import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
@@ -65,6 +67,9 @@ public class BaseApp extends Application {
 
         Utils.init(this);
 
+        if (Build.USER.contains("liaokai")) {
+            ToolLZ.Init(this);
+        }
         LogUtils.getConfig().setDir(IConfigs.PATH_LOG).setFilePrefix("log");
 
 

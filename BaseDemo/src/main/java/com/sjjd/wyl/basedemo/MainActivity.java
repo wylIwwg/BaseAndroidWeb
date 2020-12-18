@@ -84,12 +84,6 @@ public class MainActivity extends BaseActivity2 {
         initListener();
         hasPermission();
 
-        mDataHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(null, "11111", Toast.LENGTH_SHORT).show();
-            }
-        }, 1000);
 
     }
 
@@ -109,7 +103,6 @@ public class MainActivity extends BaseActivity2 {
     @Override
     public void initListener() {
         super.initListener();
-        initSetting();
         mDrawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerOpened(View drawerView) {

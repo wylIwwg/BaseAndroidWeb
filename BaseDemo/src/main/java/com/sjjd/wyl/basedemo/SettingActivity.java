@@ -19,6 +19,7 @@ import com.sjjd.wyl.baseandroidweb.base.IDescription;
 import com.sjjd.wyl.baseandroidweb.bean.BBaseSetting;
 import com.sjjd.wyl.baseandroidweb.bean.ConfigSetting;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
+import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class SettingActivity extends AppCompatActivity {
 
     List<ConfigSetting> datas = new ArrayList<>();
     CommonAdapter<ConfigSetting> mAdapter;
+    @BindView(R.id.btnSave)
+    Button mBtnSave;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,34 +57,33 @@ public class SettingActivity extends AppCompatActivity {
                 holder.setText(R.id.tvDesc, configSetting.getDescription());
                 EditText mView = (EditText) holder.getView(R.id.etContent);
                 holder.setText(R.id.etContent, configSetting.getValue());
-                if (!configSetting.getDescription().endsWith(":")) {
+                if (!configSetting.getDescription().contains(":")) {
                     mView.setEnabled(false);
-                } else {
-                    if (mView.getTag() != null && mView.getTag() instanceof TextWatcher) {
-                        mView.removeTextChangedListener((TextWatcher) mView.getTag());
+                }
+                if (mView.getTag() != null && mView.getTag() instanceof TextWatcher) {
+                    mView.removeTextChangedListener((TextWatcher) mView.getTag());
+                }
+
+                TextWatcher intervalTextWatcher = new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     }
 
-                    TextWatcher intervalTextWatcher = new TextWatcher() {
-                        @Override
-                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                        }
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
 
-                        @Override
-                        public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        }
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        // datas.get(position).setValue(s.toString());
+                        ReflectUtils.reflect(mSetting).field(configSetting.getName(), s.toString());
 
-                        @Override
-                        public void afterTextChanged(Editable s) {
-                           // datas.get(position).setValue(s.toString());
-                            ReflectUtils.reflect(mSetting).field(configSetting.getName(), s.toString());
+                    }
+                };
 
-                        }
-                    };
+                mView.addTextChangedListener(intervalTextWatcher);
+                mView.setTag(intervalTextWatcher);
 
-                    mView.addTextChangedListener(intervalTextWatcher);
-                    mView.setTag(intervalTextWatcher);
-
-                }
             }
         };
 
@@ -93,25 +95,38 @@ public class SettingActivity extends AppCompatActivity {
 
     BBaseSetting mSetting;
 
-    @OnClick(R.id.btnGetAll)
-    public void onViewClicked() {
 
-        Field[] mDeclaredFields = mSetting.getClass().getDeclaredFields();
-        datas.clear();
-        for (Field f : mDeclaredFields) {
-            IDescription mAnnotation = f.getAnnotation(IDescription.class);
-            f.setAccessible(true);
-            try {
-                ConfigSetting c = new ConfigSetting();
-                c.setDescription(mAnnotation.value());
-                c.setName(f.getName());
-                c.setValue(f.get(mSetting) == null ? "" : f.get(mSetting).toString());
-                datas.add(c);
+    @OnClick({R.id.btnGetAll, R.id.btnSave})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.btnGetAll:
+                if (mSetting == null)
+                    return;
+                Field[] mDeclaredFields = mSetting.getClass().getDeclaredFields();
+                datas.clear();
+                for (Field f : mDeclaredFields) {
+                    IDescription mAnnotation = f.getAnnotation(IDescription.class);
+                    f.setAccessible(true);
+                    try {
+                        ConfigSetting c = new ConfigSetting();
+                        c.setDescription(mAnnotation.value());
+                        c.setName(f.getName());
+                        c.setValue(f.get(mSetting) == null ? "" : f.get(mSetting).toString());
+                        datas.add(c);
 
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+                mAdapter.notifyDataSetChanged();
+                break;
+            case R.id.btnSave:
+              /* for (ConfigSetting cs : datas) {
+                    ReflectUtils.reflect(mSetting).field(cs.getName(), cs.toString());
+                }*/
+                ToolLog.e(TAG, "onViewClicked: " + JSON.toJSONString(mSetting));
+                FileIOUtils.writeFileFromString(IConfigs.PATH_LOG + "/setting.txt", JSON.toJSONString(mSetting));
+                break;
         }
-        mAdapter.notifyDataSetChanged();
     }
 }

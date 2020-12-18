@@ -64,6 +64,7 @@ public class HardwareActivity extends BaseHospitalActivity {
         setContentView(R.layout.activity_hardware);
         ButterKnife.bind(this);
 
+        initData();
 
     }
 

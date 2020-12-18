@@ -16,34 +16,27 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.LogUtils;
-import com.blankj.utilcode.util.SPUtils;
 import com.lztek.toolkit.Lztek;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-import com.lzy.okgo.model.Response;
 import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.bean.BPower;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
-import com.sjjd.wyl.baseandroidweb.bean.BResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
 import com.sjjd.wyl.baseandroidweb.listeners.RegisterListener;
-import com.sjjd.wyl.baseandroidweb.thread.RestartThread;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolCommon;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDevice;
 import com.sjjd.wyl.baseandroidweb.tools.ToolDisplay;
+import com.sjjd.wyl.baseandroidweb.tools.ToolLZ;
 import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
-import com.unisound.client.SpeechConstants;
 import com.unisound.client.SpeechSynthesizer;
-import com.unisound.client.SpeechSynthesizerListener;
 import com.xuhao.didi.core.iocore.interfaces.IPulseSendable;
 import com.xuhao.didi.core.iocore.interfaces.ISendable;
 import com.xuhao.didi.core.pojo.OriginalData;
@@ -61,7 +54,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -97,7 +89,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     public SimpleDateFormat mWeekFormat;
     public TimeThread mTimeThread;
 
-    public RestartThread mRestartThread;
     public String mRebootStarTime = "";//开关机 开机时间
     public String mRebootEndTime = "";//开关机 关机时间
 
@@ -147,26 +138,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
     }
 
 
-    /**
-     * 开启开关机线程
-     */
-    public void startRebootThread() {
-        mRestartThread = new RestartThread(mContext, mDataHandler);
-        mRestartThread.sleep_time = 10 * 1000;
-        //重启设备线程 固定时间
-        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
-        if (power.length() > 0) {
-            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
-            if (pbd != null) {
-                mRebootStarTime = pbd.getStarTime();
-                mRebootEndTime = pbd.getEndTime();
-                if (mRebootEndTime.length() > 0) {//关机时间
-                    mRestartThread.setRebootTime(mRebootEndTime);
-                }
-            }
-        }
-        mRestartThread.start();
-    }
 
 
     public void hasPermission() {
@@ -209,7 +180,7 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         mHost = String.format(IConfigs.HOST, mIP, mHttpPort);
 
         String mVoice = ToolSP.getDIYString(IConfigs.SP_VOICE_TEMP);
-        if (mVoice != null && mVoice.length() > 0) {
+        if (mVoice.length() > 0) {
             mVoiceSetting = JSON.parseObject(mVoice, BVoiceSetting.class);
         } else {
             mVoiceSetting = new BVoiceSetting();
@@ -218,7 +189,14 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
             mVoiceSetting.setVoSex(1 + "");
             mVoiceSetting.setVoSpeed("3");
         }
-
+        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
+        if (power.length() > 0) {
+            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
+            if (pbd != null) {
+                mRebootStarTime = pbd.getStarTime();
+                mRebootEndTime = pbd.getEndTime();
+            }
+        }
         Map<String, ?> mAll = ToolSP.getAll();
         LogUtils.file("【本地配置信息】：");
         for (String str : mAll.keySet()) {
@@ -353,9 +331,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                                 if (pbd != null) {
                                     mRebootStarTime = pbd.getStarTime();
                                     mRebootEndTime = pbd.getEndTime();
-                                    if (mRebootEndTime.length() > 0 && mRestartThread != null) {//关机时间
-                                        mRestartThread.setRebootTime(mRebootEndTime);
-                                    }
                                     ToolSP.putDIYString(IConfigs.SP_POWER, JSON.toJSONString(pbd));
                                 }
                             }
@@ -367,6 +342,9 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                                 long mTime = mObject.getLong("date");
                                 if (mTime > 0) {
                                     mDate = new Date(mTime);
+                                    //以服务器时间来控制开关机重启
+                                    if (!localTimeSeted)
+                                        setSystemTime(mTime);
                                 } else {
                                     mDate = new Date(System.currentTimeMillis());
                                 }
@@ -381,9 +359,6 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
                             String dateStr = mDateFormat.format(mDate);
                             //星期
                             String week = mWeekFormat.format(mDate);
-                            if (mRestartThread != null) {
-                                mRestartThread.setNetTime(timeStr);
-                            }
                             showTime(dateStr, timeStr, week);
                             break;
                         case "voiceSwitch"://flag
@@ -526,12 +501,10 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
         }
     }
 
+    public boolean localTimeSeted = false;//是否设置过本地时间
 
     public void setSystemTime(long time) {
-        Lztek mLztek = Lztek.create(mContext);
-        mLztek.setSystemTime(time);
-        //setSystemTime(long milliseconds1970)
-        //<uses-permission android:name="android.permission.SET_TIME" />。
+        localTimeSeted = ToolLZ.Instance().setSystemTime(time);
     }
 
 
@@ -539,20 +512,21 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
      * @param seconds 单位秒
      */
     public void hardReboot(final int seconds) {
-        release();
-        mDataHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Lztek mLztek = Lztek.create(mContext);
-                if (seconds > 0) {
-                    mLztek.alarmPoweron(seconds);//定时开机
-                } else {
-                    mLztek.hardReboot();//重启
-                }
-                finish();
-            }
-        }, 2000);
+        if (ToolLZ.Instance().isLZDevice()) {
+            release();
 
+            mDataHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (seconds > 0) {
+                        ToolLZ.Instance().alarmPoweron(seconds);////定时开机
+                    } else {
+                        ToolLZ.Instance().hardReboot();//重启
+                    }
+                    close();
+                }
+            }, 2000);
+        }
     }
 
     /**
@@ -563,7 +537,12 @@ public class BaseHospitalActivity extends AppCompatActivity implements BaseDataH
      * @param week
      */
     public void showTime(String dateStr, String timeStr, String week) {
-
+        if (timeStr.equals(mRebootEndTime)) {
+            ToolLog.efile("【关机时间到了】: " + mRebootEndTime);
+            if (mDataHandler != null) {
+                mDataHandler.sendEmptyMessage(IConfigs.MSG_REBOOT_LISTENER);
+            }
+        }
     }
 
     public void close() {

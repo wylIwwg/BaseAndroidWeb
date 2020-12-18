@@ -15,20 +15,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.LogUtils;
-import com.lztek.toolkit.Lztek;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-import com.lzy.okgo.model.Response;
 import com.sjjd.wyl.baseandroidweb.R;
 import com.sjjd.wyl.baseandroidweb.bean.BPower;
 import com.sjjd.wyl.baseandroidweb.bean.BPulse;
 import com.sjjd.wyl.baseandroidweb.bean.BRegisterResult;
-import com.sjjd.wyl.baseandroidweb.bean.BResult;
 import com.sjjd.wyl.baseandroidweb.bean.BResult2;
 import com.sjjd.wyl.baseandroidweb.bean.BVoice;
 import com.sjjd.wyl.baseandroidweb.bean.BVoiceSetting;
 import com.sjjd.wyl.baseandroidweb.bean.BVolume;
-import com.sjjd.wyl.baseandroidweb.thread.RestartThread;
 import com.sjjd.wyl.baseandroidweb.thread.TimeThread;
 import com.sjjd.wyl.baseandroidweb.tools.IConfigs;
 import com.sjjd.wyl.baseandroidweb.tools.ToolApp;
@@ -39,9 +33,7 @@ import com.sjjd.wyl.baseandroidweb.tools.ToolLog;
 import com.sjjd.wyl.baseandroidweb.tools.ToolRegister;
 import com.sjjd.wyl.baseandroidweb.tools.ToolSP;
 import com.sjjd.wyl.baseandroidweb.tools.ToolTts;
-import com.unisound.client.SpeechConstants;
 import com.unisound.client.SpeechSynthesizer;
-import com.unisound.client.SpeechSynthesizerListener;
 import com.xuhao.didi.core.iocore.interfaces.IPulseSendable;
 import com.xuhao.didi.core.iocore.interfaces.ISendable;
 import com.xuhao.didi.core.pojo.OriginalData;
@@ -96,7 +88,6 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
     public TimeThread mTimeThread;
 
 
-    public RestartThread mRestartThread;
     public String mRebootStarTime = "";//开关机 开机时间
     public String mRebootEndTime = "";//开关机 关机时间
 
@@ -130,26 +121,6 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
         mTimeThread.start();
     }
 
-    /**
-     * 开启开关机线程
-     */
-    public void startRebootThread() {
-        mRestartThread = new RestartThread(mContext, mDataHandler);
-        mRestartThread.sleep_time = 10 * 1000;
-        //重启设备线程 固定时间
-        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
-        if (power.length() > 0) {
-            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
-            if (pbd != null) {
-                mRebootStarTime = pbd.getStarTime();
-                mRebootEndTime = pbd.getEndTime();
-                if (mRebootEndTime.length() > 0) {//关机时间
-                    mRestartThread.setRebootTime(mRebootEndTime);
-                }
-            }
-        }
-        mRestartThread.start();
-    }
 
     public void hasPermission() {
         mPresenter.checkPermission(mPermissions);
@@ -190,7 +161,14 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
             mHttpPort = "80";
         }
         mHost = String.format(IConfigs.HOST, mIP, mHttpPort);
-
+        String power = ToolSP.getDIYString(IConfigs.SP_POWER);
+        if (power.length() > 0) {
+            BPower.Data pbd = JSON.parseObject(power, BPower.Data.class);
+            if (pbd != null) {
+                mRebootStarTime = pbd.getStarTime();
+                mRebootEndTime = pbd.getEndTime();
+            }
+        }
         Map<String, ?> mAll = ToolSP.getAll();
         LogUtils.file("【本地配置信息】：");
         for (String str : mAll.keySet()) {
@@ -380,9 +358,6 @@ public class BasePhpActivity extends AppCompatActivity implements BaseDataHandle
                                 if (pbd != null) {
                                     mRebootStarTime = pbd.getStarTime();
                                     mRebootEndTime = pbd.getEndTime();
-                                    if (mRebootEndTime.length() > 0 && mRestartThread != null) {//关机时间
-                                        mRestartThread.setRebootTime(mRebootEndTime);
-                                    }
                                     ToolSP.putDIYString(IConfigs.SP_POWER, JSON.toJSONString(pbd));
                                 }
                             }

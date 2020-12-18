@@ -10,10 +10,17 @@
     <Button
         android:id="@+id/btnGetAll"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="获取设置" />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="保存" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rlvSetting"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="match_parent" />
 </LinearLayout>
